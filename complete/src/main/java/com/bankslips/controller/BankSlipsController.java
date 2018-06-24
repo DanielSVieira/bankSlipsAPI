@@ -1,6 +1,7 @@
 package com.bankslips.controller;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -40,51 +41,6 @@ public class BankSlipsController {
 	public Page<BankSlips> list(Pageable pageable) {
 		Page<BankSlips> page = bankSlipsService.list(pageable);
 		return page;
-	}
-
-	@RequestMapping(value = "/bankslips/popular/", method = RequestMethod.GET)
-	@ResponseBody
-	public Page<BankSlips> popular(Pageable pageable) {
-
-		try {
-			BankSlips bankSlips = new BankSlips();
-			bankSlips.setCustomer("abc");
-			bankSlips.setDueDate(new Date());
-			bankSlips.setTotalInCents(new BigDecimal(100000));
-			bankSlipsService.create(bankSlips, null);
-
-			BankSlips bankSlips2 = new BankSlips();
-			bankSlips2.setCustomer("def");
-			bankSlips2.setDueDate(new Date());
-			bankSlips2.setTotalInCents(new BigDecimal(200000));
-			bankSlipsService.create(bankSlips2, null);
-
-			BankSlips bankSlips3 = new BankSlips();
-			bankSlips3.setCustomer("ghi");
-			bankSlips3.setDueDate(new Date());
-			bankSlips3.setTotalInCents(new BigDecimal(300000));
-			bankSlipsService.create(bankSlips3, null);
-
-			BankSlips bankSlips4 = new BankSlips();
-			bankSlips4.setCustomer("jkl");
-			bankSlips4.setDueDate(new Date());
-			bankSlips4.setTotalInCents(new BigDecimal(100000));
-			bankSlipsService.create(bankSlips4, null);
-
-			// List<BankSlips> bankSlipsList = (List<BankSlips>)
-			// bankSlipsService.list(pageable);
-
-			// return bankSlipsList;
-			Page<BankSlips> page = bankSlipsService.list(pageable);
-
-			return page;
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return null;
-
 	}
 
 	@RequestMapping(value = "/bankslips/{bankSlipsId}", method = RequestMethod.GET)
