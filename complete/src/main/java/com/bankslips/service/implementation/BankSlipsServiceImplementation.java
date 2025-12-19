@@ -5,6 +5,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,6 +31,8 @@ import com.bankslips.validator.BankSlipsValidator;
 
 @Service
 public class BankSlipsServiceImplementation implements BankSlipsService{
+	
+	private final ExecutorService executor = Executors.newFixedThreadPool(10);
 	
 	@Autowired
 	private BankSlipsRepository bankSlipsRepository;
@@ -63,5 +69,16 @@ public class BankSlipsServiceImplementation implements BankSlipsService{
 		bankSlips.setStatus(newStatus);
 		return bankSlipsRepository.save(bankSlips);
 	}
+	
+	public void bulkSave(List<BankSlips> slips) { 
+        List<CompletableFuture<Void>> futures = slips.stream()
+                .map(slip -> CompletableFuture.runAsync(() -> {
+                	bankSlipsRepository.save(slip);
+                }, executor))
+                .collect(Collectors.toList());
 
+            CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
+		
+	}
+	
 }

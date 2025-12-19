@@ -2,7 +2,6 @@ package com.bankslips.controller;
 
 import java.util.UUID;
 
-import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.banklips.domain.BankSlips;
 import com.bankslips.service.BankSlipsService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/rest")

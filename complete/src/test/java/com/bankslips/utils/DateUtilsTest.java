@@ -1,11 +1,14 @@
 package com.bankslips.utils;
 
-import static org.junit.Assert.assertEquals;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Calendar;
 import java.util.Date;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.bankslips.exception.InvalideProvidedDateException;
 
@@ -36,20 +39,26 @@ public class DateUtilsTest {
     }
     
     
-    @Test(expected = InvalideProvidedDateException.class)
-    public void nullPointerAvoid() {
-    	Date startDate = null;
-    	Date endDate = getTodayDate();
-    	
-    	DateUtils.differenceBetweenLocalDate(startDate, endDate);
+    @Test
+    void nullPointerAvoid() {
+        Date startDate = null;
+        Date endDate = getTodayDate();
+
+        assertThrows(InvalideProvidedDateException.class, () -> {
+            DateUtils.differenceBetweenLocalDate(startDate, endDate);
+        });
     }
+
     
-    @Test(expected = InvalideProvidedDateException.class)
+    @Test
     public void nullPointerAvoidAtEndLocalDate() {
     	Date startDate = getTodayDate();
     	Date endDate = null;
+
+        assertThrows(InvalideProvidedDateException.class, () -> {
+        	DateUtils.differenceBetweenLocalDate(startDate, endDate);
+        });
     	
-    	DateUtils.differenceBetweenLocalDate(startDate, endDate);
     }
     
     @Test
