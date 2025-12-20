@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.junit.jupiter.api.Test;
 
 import com.bankslips.exception.InvalideProvidedDateException;
 

@@ -54,7 +54,25 @@ public class BankSlipsController {
 		BankSlips retrievedBankSlips = bankSlipsService.show(bankSlipsId);
 		BankSlips paidBankSlips = bankSlipsService.updateBankSlipsStatus(retrievedBankSlips, bankSlips.getStatus());
 		return new ResponseEntity<BankSlips>(paidBankSlips, HttpStatus.OK);
-
 	}
+	
+	@RequestMapping(value = "/bankslips/cancel/{bankSlipsId}", method = RequestMethod.PUT)
+	public ResponseEntity<BankSlips> cancel(@RequestBody
+			@PathVariable("bankSlipsId") String bankSlipsId) {
+
+		BankSlips paidBankSlips = bankSlipsService.cancelSlip(bankSlipsId);
+		return new ResponseEntity<BankSlips>(paidBankSlips, HttpStatus.OK);
+	}	
+
+	@RequestMapping(value = "/bankslips/pay/{bankSlipsId}", method = RequestMethod.PUT)
+	public ResponseEntity<BankSlips> pay(@RequestBody
+			@PathVariable("bankSlipsId") String bankSlipsId) {
+
+		BankSlips paidBankSlips = bankSlipsService.paySlip(bankSlipsId);
+		return new ResponseEntity<BankSlips>(paidBankSlips, HttpStatus.OK);
+	}
+	
+	
+	
 
 }

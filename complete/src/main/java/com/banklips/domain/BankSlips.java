@@ -1,6 +1,7 @@
 package com.banklips.domain;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -21,6 +23,7 @@ import jakarta.persistence.Transient;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -65,5 +68,9 @@ public class BankSlips {
     
     @Transient
 	private BigDecimal fine;
+    
+    @Nullable
+    @PastOrPresent
+    private LocalDateTime paidAt;
 	
 }

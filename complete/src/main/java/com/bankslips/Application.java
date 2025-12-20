@@ -6,8 +6,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 
-@SpringBootApplication (scanBasePackages={
-		"com.bankslips.controller", "com.bankslips.service", "com.bankslips.service.implementation", "com.bankslips.repository", "com.bankslips.exception"})
+@SpringBootApplication(scanBasePackages = "com.bankslips")
 @EnableJpaRepositories("com.bankslips.repository")
 @EntityScan(basePackages = "com.banklips.domain")  
 public class Application {
