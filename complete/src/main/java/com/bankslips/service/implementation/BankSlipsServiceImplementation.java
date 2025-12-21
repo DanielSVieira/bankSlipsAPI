@@ -31,7 +31,7 @@ import com.bankslips.enums.BankSlipsStatus;
 import com.bankslips.exception.BankSlipsContraintViolationException;
 import com.bankslips.exception.BankSlipsNotFoundException;
 import com.bankslips.repository.BankSlipsRepository;
-import com.bankslips.service.BankSlipsService;
+import com.bankslips.service.interfaces.BankSlipsService;
 import com.bankslips.utils.DateUtils;
 import com.bankslips.utils.FinanceMathUtils;
 import com.bankslips.validator.BankSlipsValidator;
@@ -40,7 +40,7 @@ import jakarta.transaction.Transactional;
 
 
 @Service
-public class BankSlipsServiceImplementation implements BankSlipsService{
+public class BankSlipsServiceImplementation implements BankSlipsService {
 	
 	
 	@Autowired
@@ -57,6 +57,7 @@ public class BankSlipsServiceImplementation implements BankSlipsService{
 		return bankSlipsRepository.save(bankSlips);	
 	}
 	
+	@Override
 	public Page<BankSlips> list(Pageable pageable) {
 		return bankSlipsRepository.findAll(pageable);
 	}
@@ -77,12 +78,6 @@ public class BankSlipsServiceImplementation implements BankSlipsService{
 			throw new BankSlipsNotFoundException(ErrorMessages.BANKSLIPS_NOT_FOUND + bankSlipsId );
 		}
 	}
-	
-	public BankSlips updateBankSlipsStatus(BankSlips bankSlips, BankSlipsStatus newStatus) {
-		bankSlips.setStatus(newStatus);
-		return bankSlipsRepository.save(bankSlips);
-	}
-	
 	
 	//TODO to add a controler to use it and test it
 	/*

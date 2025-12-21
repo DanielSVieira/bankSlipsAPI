@@ -1,0 +1,21 @@
+# Use official OpenJDK image
+FROM eclipse-temurin:17-jdk-alpine
+
+# Set working directory inside container
+WORKDIR /app
+
+# Copy Maven build files first for caching
+COPY pom.xml .
+COPY src ./src
+
+# Build the application (optional: could use a pre-built jar instead)
+RUN ./mvnw clean package -DskipTests
+
+# Copy the built jar (target name may vary)
+COPY target/gs-spring-boot-0.1.0.jar app.jar
+
+# Expose port 8080
+EXPOSE 8080
+
+# Run the Spring Boot app
+ENTRYPOINT ["java", "-jar", "app.jar"]

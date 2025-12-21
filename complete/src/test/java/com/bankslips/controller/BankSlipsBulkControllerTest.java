@@ -13,6 +13,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -20,24 +22,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.banklips.domain.BankSlips;
 import com.bankslips.Application;
+import com.bankslips.kafkaconfig.ExchangeRateConsumer;
 import com.bankslips.repository.BankSlipsRepository;
-import com.bankslips.service.BankSlipsService;
+import com.bankslips.service.interfaces.BankSlipsService;
+import com.bankslips.service.interfaces.PersistanceService;
 import com.bankslips.testutils.TestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
+@TestPropertySource(properties = {
+	    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration",
+	    "spring.kafka.listener.auto-startup=false"
+	})
 public class BankSlipsBulkControllerTest {
 	
     @Autowired
     private MockMvc mockMvc;
-    
-    @Autowired
-    private BankSlipsRepository bankSlipsRepository;
-    
     @MockBean
     private BankSlipsService bankSlipsService;
+    
+    @MockBean
+    private ExchangeRateConsumer exchangeRateConsumer;
     
     @Test
     void bulkUploadSuccess() throws Exception {

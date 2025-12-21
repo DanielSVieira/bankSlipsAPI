@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -46,6 +47,11 @@ import lombok.ToString;
 	    name = "bank_slips",
 	    uniqueConstraints = {
 	        @UniqueConstraint(name = "uk_bank_slips_external_id", columnNames = "external_id")
+	    },
+	    indexes = {
+	        @Index(name = "idx_bank_slips_status", columnList = "status"),
+	        @Index(name = "idx_bank_slips_due_date", columnList = "due_date"),
+	        @Index(name = "idx_bank_slips_paid_at", columnList = "paid_at")
 	    }
 	)
 public class BankSlips {

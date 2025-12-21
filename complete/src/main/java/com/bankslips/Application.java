@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(scanBasePackages = "com.bankslips")
 @EnableJpaRepositories("com.bankslips.repository")
-@EntityScan(basePackages = "com.banklips.domain")  
+@EntityScan(basePackages = {"com.banklips.domain", "com.exchangerate.domain"})  
 public class Application {
 
 	public static void main(String[] args) {

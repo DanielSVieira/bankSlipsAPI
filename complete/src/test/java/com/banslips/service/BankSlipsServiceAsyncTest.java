@@ -12,19 +12,26 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.banklips.domain.BankSlips;
 import com.bankslips.Application;
 import com.bankslips.repository.BankSlipsRepository;
-import com.bankslips.service.BankSlipsService;
+import com.bankslips.service.interfaces.BankSlipsService;
 import com.bankslips.testutils.TestUtils;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 @Transactional
+@ActiveProfiles("test")
+@TestPropertySource(properties = {
+	    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration",
+	    "spring.kafka.listener.auto-startup=false"
+	})
 public class BankSlipsServiceAsyncTest {
 	
     @Autowired

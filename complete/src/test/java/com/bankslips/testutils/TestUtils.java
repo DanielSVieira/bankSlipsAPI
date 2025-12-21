@@ -1,14 +1,17 @@
 package com.bankslips.testutils;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.banklips.domain.BankSlips;
+import com.exchangerate.domain.dto.ExchangeRateResponse;
 
 public class TestUtils {
 	
@@ -55,6 +58,14 @@ public class TestUtils {
     
     public static String generateRandomString(int length) {
     	return UUID.randomUUID().toString().replace("-", "");
+    }
+    
+    public static ExchangeRateResponse createExchangeRateMockData() {
+    	return new ExchangeRateResponse(
+    		    "USD",
+    		    LocalDate.now(),
+    		    Map.of("EUR", BigDecimal.valueOf(0.93), "BRL", BigDecimal.valueOf(5.1))
+    		);
     }
 	
 

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.banklips.domain.BankSlips;
-import com.bankslips.service.BankSlipsService;
+import com.bankslips.service.interfaces.PersistanceService;
 
 import jakarta.validation.Valid;
 
@@ -22,7 +22,7 @@ public class BankSlipsBulkController {
 
     
     @Autowired
-    private BankSlipsService bankSlipsService;
+    private PersistanceService bankSlipsService;
 
 
 	@RequestMapping(value = "/bankslips/bulk", method = RequestMethod.POST)
