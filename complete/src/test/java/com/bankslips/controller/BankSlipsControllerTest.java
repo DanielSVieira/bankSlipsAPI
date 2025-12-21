@@ -4,6 +4,7 @@ import com.banklips.domain.BankSlips;
 import com.bankslips.Application;
 import com.bankslips.enums.BankSlipsStatus;
 import com.bankslips.service.BankSlipsService;
+import com.bankslips.testutils.TestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,7 @@ public class BankSlipsControllerTest {
         cal.add(Calendar.DATE, 1);
         bankSlips.setDueDate(cal.getTime());
         bankSlips.setTotalInCents(new BigDecimal(10000));
+        bankSlips.setExternalId(TestUtils.generateRandomString(20));       
         return bankSlips;
     }
     
@@ -54,6 +56,7 @@ public class BankSlipsControllerTest {
         BankSlips bankSlips = new BankSlips();
         bankSlips.setCustomer("abc");
         bankSlips.setTotalInCents(new BigDecimal(10000));
+        bankSlips.setExternalId(TestUtils.generateRandomString(20)); 
         return bankSlips;
     }    
 

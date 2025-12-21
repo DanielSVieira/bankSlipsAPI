@@ -14,14 +14,18 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.annotation.Nullable;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
@@ -38,12 +42,23 @@ import lombok.ToString;
 @Entity
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @EqualsAndHashCode @ToString @Getter @Setter @AllArgsConstructor @NoArgsConstructor @RequiredArgsConstructor
+@Table(
+	    name = "bank_slips",
+	    uniqueConstraints = {
+	        @UniqueConstraint(name = "uk_bank_slips_external_id", columnNames = "external_id")
+	    }
+	)
 public class BankSlips {
 	
 	@SuppressWarnings("deprecation")
 	@Id @GeneratedValue(generator="system-uuid")
 	@GenericGenerator(name="system-uuid", strategy = "uuid2")
+	@Column(name = "uuid", nullable = false, updatable = false)
 	@NonNull private String id;
+	
+    @Column(name = "external_id", nullable = false, updatable = false)
+    @NotBlank
+    private String externalId;
 
 	@NotNull
 	(message=ErrorMessages.DUE_DATE_NOT_PROVIDED)

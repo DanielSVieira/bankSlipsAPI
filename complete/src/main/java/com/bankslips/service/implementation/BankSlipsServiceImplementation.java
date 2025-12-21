@@ -2,11 +2,15 @@ package com.bankslips.service.implementation;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
@@ -57,6 +61,7 @@ public class BankSlipsServiceImplementation implements BankSlipsService{
 		return bankSlipsRepository.findAll(pageable);
 	}
 	
+	//TODO refactor this code. better calculate the fine
 	public BankSlips show(String bankSlipsId) {
 		try {
 			Optional<BankSlips> bankSlipsOptional = bankSlipsRepository.findById(bankSlipsId);
@@ -100,8 +105,9 @@ public class BankSlipsServiceImplementation implements BankSlipsService{
      */
     public CompletableFuture<Map<String, Object>> bulkSaveAsync(List<BankSlips> slips) {
         int batchSize = 500; // adjustable based on memory/DB
-        List<List<BankSlips>> batches = createSlipBatches(slips, batchSize);
-
+        List<BankSlips> uniqueSlips = removeDuplication(slips);
+        List<List<BankSlips>> batches = createSlipBatches(uniqueSlips, batchSize);
+        
         List<CompletableFuture<Void>> futures = batches.stream()
             .map(batch -> CompletableFuture.runAsync(() -> {
             	bankSlipsRepository.saveAll(batch); // save batch in one DB call
@@ -123,6 +129,20 @@ public class BankSlipsServiceImplementation implements BankSlipsService{
         	             .toList();
 		return batches;
 	}
+	
+	public List<BankSlips> removeDuplication(Collection<BankSlips> slips) {
+	    Set<String> seenExternalIds = new HashSet<>();
+	    List<BankSlips> uniqueSlips = new ArrayList<>(slips.size());
+
+	    for (BankSlips slip : slips) {
+	        if (seenExternalIds.add(slip.getExternalId())) {
+	            uniqueSlips.add(slip);
+	        }
+	    }
+
+	    return uniqueSlips;
+	}
+	
 
 	@Override
 	@Transactional

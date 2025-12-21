@@ -2,18 +2,17 @@ package com.banslips.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.math.BigDecimal;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.banklips.domain.BankSlips;
@@ -22,8 +21,10 @@ import com.bankslips.repository.BankSlipsRepository;
 import com.bankslips.service.BankSlipsService;
 import com.bankslips.testutils.TestUtils;
 
-@Transactional
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Application.class)
+@AutoConfigureMockMvc
+@Transactional
 public class BankSlipsServiceAsyncTest {
 	
     @Autowired
@@ -31,11 +32,34 @@ public class BankSlipsServiceAsyncTest {
 
     @Autowired
     private BankSlipsRepository bankSlipsRepository;
+    
+    @BeforeEach
+    private void setp() { 
+    	bankSlipsRepository.deleteAll();
+    }
 
     @Test
     void shouldPersist100BankSlips() {
     	int totaRecords = 100;
         List<BankSlips> slips = TestUtils.generateValidBankSlipsList(totaRecords);
+
+        CompletableFuture<Map<String, Object>> future =
+                bankSlipsService.bulkSaveAsync(slips);
+
+        future.join();
+
+        assertEquals(totaRecords, bankSlipsRepository.count());
+    }
+    
+    @Test
+    void shouldRejectDuplicateBankSlips() {
+    	int totaRecords = 100;
+        List<BankSlips> slips = TestUtils.generateValidBankSlipsList(totaRecords);
+        BankSlips slipWithDuplicateID =  TestUtils.generateBankSlipWiwithDuplicatedExternalID(slips.get(0));
+        slips.add(slipWithDuplicateID);
+        
+        assertEquals(totaRecords + 1, slips.size());
+        
 
         CompletableFuture<Map<String, Object>> future =
                 bankSlipsService.bulkSaveAsync(slips);

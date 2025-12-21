@@ -2,6 +2,8 @@ package com.bankslips.repository;
 
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,4 +21,8 @@ public interface BankSlipsRepository extends JpaRepository<BankSlips, String> {
 	Long countByStatus(BankSlipsStatus status);
     long countByIdIn(List<Long> ids);
     List<BankSlips> findAllByIdIn(List<Long> ids);
+    Optional<BankSlips> findByExternalId(String externalId);
+    boolean existsByExternalId(String externalId);
+    List<BankSlips> findAllByExternalIdIn(Set<String> externalIds);
+    
 }
