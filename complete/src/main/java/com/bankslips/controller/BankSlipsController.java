@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.banklips.domain.BankSlips;
 import com.bankslips.service.interfaces.BankSlipsService;
-import com.bankslips.service.interfaces.PersistanceService;
 
 import jakarta.validation.Valid;
 
