@@ -56,6 +56,7 @@ All of those attributes are required to create a new BankSlips.
 "due_date":"2018-01-01",
 "total_in_cents":"100000",
 "customer":"Trillian Company",
+"external_id":"AM12-4567-12",
 "status":"PENDING"
 }
 ```
@@ -64,6 +65,8 @@ All of those attributes are required to create a new BankSlips.
 Response status:
 
 ● 201 : Bankslip created
+
+● 200 : Bankslip updated
 
 ● 400 : Bankslip not provided in the request body
 
@@ -118,17 +121,14 @@ Response status:
 #### Pay a BankSlips
 
 ```
-PUT http://localhost:8080/rest/bankslips/{id}
-```
-
-Used to update a status from a BankSlips.
-It is required to inform the new status of this BankSlips.
+PUT http://localhost:8080/rest//bankslips/pay/{id}
 
 ```
-{
-	"status":"PAID"
-}
-```
+
+The payment date is recorded at the moment the payment happens.
+It is only allowed to pay pending Slip
+
+
 
 If the provided ID doens't match any record, API will return an error.
 
@@ -137,23 +137,21 @@ Response status:
 ● 200 : Bankslip paid
 
 ● 404 : Bankslip not found with the specified id
+
+● 400 : Bankslip is not pending, so it the payment is rejected.
 
 
 #### Cancel a BankSlips
 
 
 ```
-PUT http://localhost:8080/rest/bankslips/{id}
+PUT http://localhost:8080/rest/bankslips/pay/{id}
 ```
 
 Used to update a status from a BankSlips.
 It is required to inform the new status of this BankSlips.
 
-```
-{
-	"status":"CANCELED"
-}
-```
+
 
 If the provided ID doens't match any record, API will return an error.
 
@@ -162,3 +160,44 @@ Response status:
 ● 200 : Bankslip paid
 
 ● 404 : Bankslip not found with the specified id
+
+● 400 : Bankslip is not pending, so it the payment is rejected.
+
+
+#### Bulk a BankSlips
+
+
+```
+POST http://localhost:8080/rest/bankslips/bulk/
+```
+
+Used to upload a list of bankslips
+
+
+
+It is required to post a valid list of bankslips on the payload.
+
+Response status:
+
+● 200 : all bankslips were created
+
+● 422 : Bankslip invalid bankslip on the payload 
+
+
+#### Bulk a BankSlips
+
+
+```
+POST http://localhost:8080/rest/bankslips/bulk/async
+```
+
+Used to upload a list of bankslips
+
+
+
+It is required to post a valid list of bankslips on the payload.
+
+Response status:
+
+● 200 : The input was received, and it will be processed async
+

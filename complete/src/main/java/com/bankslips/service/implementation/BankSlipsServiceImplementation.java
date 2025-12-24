@@ -79,7 +79,8 @@ public class BankSlipsServiceImplementation implements BankSlipsService {
 		}
 	}
 	
-	//TODO to add a controler to use it and test it
+	//TODO handle gracefully failed records
+	//TODO return a list of records not persisted with the root cause
 	/*
 	 * bulk save synchronous
 	 */
@@ -94,7 +95,7 @@ public class BankSlipsServiceImplementation implements BankSlipsService {
 		
 	}
 	
-    //TODO to add a controller to use it and test it
+    //TODO to get a way retrieve a way 
     /**
      * Bulk save in chunks asynchronously
      */

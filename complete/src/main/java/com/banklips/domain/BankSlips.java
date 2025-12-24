@@ -24,6 +24,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
@@ -93,5 +94,8 @@ public class BankSlips {
     @Nullable
     @PastOrPresent
     private LocalDateTime paidAt;
+    
+    @Version
+    private Long version;
 	
 }
