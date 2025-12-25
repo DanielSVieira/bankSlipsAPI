@@ -17,7 +17,7 @@ import com.exchangerate.domain.dto.ExchangeRateResponse;
 @Configuration
 public class KafkaProducerConfig {
 	
-	private final String  BOOTSTRAP_SERVERS_CONFIG_URL = "localhost:9092";
+	private final String  BOOTSTRAP_SERVERS_CONFIG_URL = "kafka:29092";
 
     @Bean
     public ProducerFactory<String, ExchangeRateResponse> producerFactory() {

@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 
 import com.exchangerate.domain.dto.ExchangeRateResponse;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 @Profile("!test")
 public class ExchangeRateScheduler {
 	
@@ -19,15 +22,25 @@ public class ExchangeRateScheduler {
 	
 	@Autowired
     private KafkaTemplate<String, ExchangeRateResponse> kafkaTemplate;
+	
+	private final List<String> CURRENCIES_LIST = List.of("USD", "EUR", "BRL");
 
 
 	@Scheduled(fixedRate = 300000) // every 5 minutes
 	public void syncExchangeRates() {
-	    List<String> currencies = List.of("USD", "EUR", "BRL");
-	    for (String currency : currencies) {
+	    for (String currency : CURRENCIES_LIST) {
 	        exchangeRateService.syncAsync(currency) 
 	            .thenAccept(response -> {
-	                kafkaTemplate.send("exchange-rates", response); 
+	            	log.debug("SUCCESS: Generated DTO for " + currency + ": " + response);
+	                try {
+	                    kafkaTemplate.send("exchange-rates", response); 
+	                } catch (Exception e) {
+	                    System.err.println("KAFKA ERROR: Could not send " + currency + " but DTO is valid.");
+	                }
+	            })
+	            .exceptionally(ex -> {
+	                System.err.println("SERVICE ERROR for " + currency + ": " + ex.getMessage());
+	                return null;
 	            });
 	    }
 	}

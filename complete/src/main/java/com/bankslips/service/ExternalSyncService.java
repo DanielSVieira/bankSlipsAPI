@@ -34,6 +34,7 @@ public class ExternalSyncService implements ApiService<ExchangeRateResponse> {
 	public CompletableFuture<ExchangeRateResponse> syncAsync(String currency) {
 	    return CompletableFuture.supplyAsync(() -> {
 	        ExchangeRateResponse response = exchangeClient.getRates(currency).block();
+	        ExchangeRate test = response.toEntity();
 	        exchangeRateRepository.save(response.toEntity());
 	        return response;
 	    }, executor);

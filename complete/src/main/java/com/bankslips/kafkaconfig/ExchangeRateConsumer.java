@@ -1,16 +1,18 @@
 package com.bankslips.kafkaconfig;
 
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import com.bankslips.repository.ExchangeRateRepository;
-import com.exchangerate.domain.ExchangeRate;
 import com.exchangerate.domain.dto.ExchangeRateResponse;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class ExchangeRateConsumer {
 
 	@Autowired
@@ -25,23 +27,14 @@ public class ExchangeRateConsumer {
         groupId = EXCHANGE_RATES_GROUP_ID,
         containerFactory = EXCHANGE_RATES_CONTAINER_FACTORY
     )
+    
     public void consume(ExchangeRateResponse response) {
-
-        if (!isRecordAlreadyPersisted(response)) {
+        try {
             exchangeRateRepository.save(response.toEntity());
+        } catch (DataIntegrityViolationException e) {
+            log.info("Exchange rate already exists for {} on {}", response.base(), response.date());
         }
     }
 
-    /**
-     * idempotencyCheck. Avoid duplication
-     * @param response
-     * @return
-     */
-	private boolean isRecordAlreadyPersisted(ExchangeRateResponse response) {
-		Optional<ExchangeRate> exists = exchangeRateRepository
-                .findByCurrencyAndRateDate(response.base(), response.date());
-
-		return exists.isPresent();
-	}
 }
 

@@ -1,48 +1,47 @@
-version: "3.9"
-
 services:
   app:
     build: .
     ports:
       - "8080:8080"
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: h2
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-#      SPRING_DATASOURCE_URL: JDBC:POSTGRESQL://DB:5432/BANKSLIPS
-#      SPRING_DATASOURCE_USERNAME: POSTGRES
-#      SPRING_DATASOURCE_PASSWORD: POSTGRES
-#      SPRING_JPA_HIBERNATE_DDL_AUTO: UPDATE
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    command: >
+      java -Dspring.kafka.bootstrap-servers=kafka:29092 -Dspring.profiles.active=docker -jar /app/app.jar
+    networks:
+      - exchange-net
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
+    networks:
+      - exchange-net
 
   kafka:
-      image: confluentinc/cp-kafka:7.5.0
-      depends_on:
-        - zookeeper
-      ports:
-        - "9092:9092"
-      environment:
-        KAFKA_BROKER_ID: 1
-        KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-        # CHANGE THIS LINE: 
-        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-        KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "nc", "-z", "kafka", "29092"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - exchange-net
 
-#  db:
-#    image: postgres:15
-#   environment:
-#      POSTGRES_DB: bankslips
-#      POSTGRES_USER: postgres
-#      POSTGRES_PASSWORD: postgres
-#    ports:
-#      - "5432:5432"
+networks:
+  exchange-net:
+    driver: bridge
