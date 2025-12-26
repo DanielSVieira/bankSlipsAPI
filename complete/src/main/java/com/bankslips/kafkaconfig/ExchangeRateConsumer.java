@@ -2,6 +2,7 @@ package com.bankslips.kafkaconfig;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -18,16 +19,20 @@ public class ExchangeRateConsumer {
 	@Autowired
     private ExchangeRateRepository exchangeRateRepository;
 	
-	private final String EXCHANGE_RATES_TOPICS = "exchange-rates";
-	private final String EXCHANGE_RATES_GROUP_ID = "exchange-rate-group";
-	private final String EXCHANGE_RATES_CONTAINER_FACTORY = "kafkaListenerContainerFactory";
-    
+    @Value("${spring.kafka.topics.exchange-rates}")
+    private String exchangeRatesTopic;
+
+    @Value("${spring.kafka.topics.exchange-rates-group-id}")
+    private String groupId;
+
+    @Value("${spring.kafka.topics.exchange-rates-container-factory}")
+    private String containerFactory;
+
     @KafkaListener(
-        topics = EXCHANGE_RATES_TOPICS,
-        groupId = EXCHANGE_RATES_GROUP_ID,
-        containerFactory = EXCHANGE_RATES_CONTAINER_FACTORY
+        topics = "${spring.kafka.topics.exchange-rates}",
+        groupId = "${spring.kafka.topics.exchange-rates-group-id}",
+        containerFactory = "${spring.kafka.topics.exchange-rates-container-factory}"
     )
-    
     public void consume(ExchangeRateResponse response) {
         try {
             exchangeRateRepository.save(response.toEntity());

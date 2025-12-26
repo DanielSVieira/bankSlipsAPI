@@ -8,6 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.bankslips.config.KafkaTopicProperties;
 import com.exchangerate.domain.dto.ExchangeRateResponse;
 
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,10 @@ public class ExchangeRateScheduler {
 	@Autowired
     private KafkaTemplate<String, ExchangeRateResponse> kafkaTemplate;
 	
+	@Autowired
+	private KafkaTopicProperties kafkaTopics;
+
+	
 	private final List<String> CURRENCIES_LIST = List.of("USD", "EUR", "BRL");
 
 
@@ -33,7 +38,7 @@ public class ExchangeRateScheduler {
 	            .thenAccept(response -> {
 	            	log.debug("SUCCESS: Generated DTO for " + currency + ": " + response);
 	                try {
-	                    kafkaTemplate.send("exchange-rates", response); 
+						kafkaTemplate.send(kafkaTopics.getExchangeRates(), response); 
 	                } catch (Exception e) {
 	                    System.err.println("KAFKA ERROR: Could not send " + currency + " but DTO is valid.");
 	                }

@@ -26,11 +26,11 @@ public class ExchangeRateClient {
     @Retry(name = RETRY_NAME)
     @CircuitBreaker(name = RETRY_NAME, fallbackMethod = FALLBACK_METHOD_NAME)
     public Mono<ExchangeRateResponse> getRates(String currency) {
-    	Mono<ExchangeRateResponse> test = webClient.get()
+    	Mono<ExchangeRateResponse> ratesResponse = webClient.get()
             .uri(URI_RATES, currency)
             .retrieve()
             .bodyToMono(ExchangeRateResponse.class);
-    	return test;
+    	return ratesResponse;
     }
 
     private Mono<ExchangeRateResponse> fallback(Throwable ex) {
