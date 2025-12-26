@@ -71,7 +71,7 @@ public class BankSlips {
 	(message=ErrorMessages.DUE_DATE_NOT_PROVIDED)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("due_date")
-	@FutureOrPresent
+	@FutureOrPresent(message=ErrorMessages.DUE_DATE_IN_PAST)
 	@NonNull private Date dueDate;
 	
     @NotNull

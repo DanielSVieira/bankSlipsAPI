@@ -23,9 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.banklips.domain.BankSlips;
 import com.bankslips.Application;
 import com.bankslips.kafkaconfig.ExchangeRateConsumer;
-import com.bankslips.repository.BankSlipsRepository;
 import com.bankslips.service.interfaces.BankSlipsService;
-import com.bankslips.service.interfaces.PersistanceService;
 import com.bankslips.testutils.TestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

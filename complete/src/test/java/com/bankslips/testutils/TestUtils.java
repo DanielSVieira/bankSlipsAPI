@@ -3,6 +3,7 @@ package com.bankslips.testutils;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -25,14 +26,8 @@ public class TestUtils {
 
         return IntStream.range(0, numberOdRecords)
                 .mapToObj(i -> {
-                    BankSlips bankSlips = new BankSlips();
+                	BankSlips bankSlips = generateValidBankSlip();
 
-                    bankSlips.setCustomer(CUSTOMER_PREFIX + (random.nextInt(900) + 100));
-                    Calendar cal = Calendar.getInstance();
-                    cal.add(Calendar.DATE, random.nextInt(30) + 1);
-                    bankSlips.setDueDate(cal.getTime());
-                    bankSlips.setTotalInCents(generateRandomNumberBiggerThan10000());
-                    bankSlips.setExternalId(generateRandomString(EXTERNAL_ID_SIZE));
 
                     return bankSlips;
                 })
@@ -49,6 +44,35 @@ public class TestUtils {
         bankSlipsWithDuplicated.setExternalId(bankSlips.getExternalId());       
         return bankSlipsWithDuplicated;
     }
+    
+    public static BankSlips generateValidBankSlip() {
+        BankSlips bankSlips = new BankSlips();
+        bankSlips.setCustomer(CUSTOMER_PREFIX + (random.nextInt(900) + 100));
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, random.nextInt(30) + 1);
+        bankSlips.setDueDate(cal.getTime());
+        bankSlips.setTotalInCents(generateRandomNumberBiggerThan10000());
+        bankSlips.setExternalId(generateRandomString(EXTERNAL_ID_SIZE));     
+        return bankSlips;
+    }
+    
+    public static BankSlips generateBankSlipWithoutDueDate() {
+        BankSlips bankSlips = new BankSlips();
+        bankSlips.setCustomer(CUSTOMER_PREFIX + (random.nextInt(900) + 100));
+        bankSlips.setTotalInCents(generateRandomNumberBiggerThan10000());
+        bankSlips.setExternalId(generateRandomString(EXTERNAL_ID_SIZE));     
+        return bankSlips;
+    }    
+    
+    public static BankSlips generateBankSlipWithPastDueDate() {
+    	BankSlips bankSlips = generateValidBankSlip();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+    	bankSlips.setDueDate(calendar.getTime());
+    	
+    	return bankSlips;
+    }
+
     
 
     

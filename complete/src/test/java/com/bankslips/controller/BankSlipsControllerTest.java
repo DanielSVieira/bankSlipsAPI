@@ -2,6 +2,7 @@ package com.bankslips.controller;
 
 import com.banklips.domain.BankSlips;
 import com.bankslips.Application;
+import com.bankslips.contants.ErrorMessages;
 import com.bankslips.enums.BankSlipsStatus;
 import com.bankslips.service.interfaces.BankSlipsService;
 import com.bankslips.testutils.TestUtils;
@@ -18,10 +19,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.validation.BindingResult;
 
-import java.math.BigDecimal;
-import java.util.Calendar;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,29 +49,11 @@ public class BankSlipsControllerTest {
     @Autowired
     private BankSlipsService bankSlipsService;
 
-    private BankSlips generateValidBankSlips() {
-        BankSlips bankSlips = new BankSlips();
-        bankSlips.setCustomer("abc");
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, 1);
-        bankSlips.setDueDate(cal.getTime());
-        bankSlips.setTotalInCents(new BigDecimal(10000));
-        bankSlips.setExternalId(TestUtils.generateRandomString(20));       
-        return bankSlips;
-    }
-    
-    private BankSlips generateBankSlipsWithoutDueDate() {
-        BankSlips bankSlips = new BankSlips();
-        bankSlips.setCustomer("abc");
-        bankSlips.setTotalInCents(new BigDecimal(10000));
-        bankSlips.setExternalId(TestUtils.generateRandomString(20)); 
-        return bankSlips;
-    }    
 
     @Test
     void saveBankSlipSuccessfully() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        BankSlips bankSlips = generateValidBankSlips();
+        BankSlips bankSlips = TestUtils.generateValidBankSlip();
         String json = mapper.writeValueAsString(bankSlips);
 
         String result = mockMvc.perform(post("/rest/bankslips/")
@@ -94,21 +76,36 @@ public class BankSlipsControllerTest {
     @Test
     void saveBankSlipWithoutDueDate() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        BankSlips bankSlips = generateBankSlipsWithoutDueDate();
+        BankSlips bankSlips = TestUtils.generateBankSlipWithoutDueDate();
         String json = mapper.writeValueAsString(bankSlips);
 
         mockMvc.perform(post("/rest/bankslips/")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andDo(print())
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$[0]").value(ErrorMessages.DUE_DATE_NOT_PROVIDED));
 
-    }    
+    }   
+    
+    @Test
+    void saveBankSlipWithAPastDueDate() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        BankSlips bankSlips = TestUtils.generateBankSlipWithPastDueDate();
+        String json = mapper.writeValueAsString(bankSlips);
+
+        
+        mockMvc.perform(post("/rest/bankslips/")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$[0]").value(ErrorMessages.DUE_DATE_IN_PAST));
+    }   
     
     @Test
     void payUnkownBankSlips() throws Exception {
     	ObjectMapper mapper = new ObjectMapper();
-    	BankSlips bankSlips = generateValidBankSlips();
+    	BankSlips bankSlips = TestUtils.generateValidBankSlip();
     	String json = mapper.writeValueAsString(bankSlips);
     	
     	mockMvc.perform(put("/rest/bankslips/pay/9999")
@@ -124,7 +121,7 @@ public class BankSlipsControllerTest {
     @Test
     void payBankSlips() throws Exception {
     	ObjectMapper mapper = new ObjectMapper();
-    	BankSlips bankSlips = generateValidBankSlips();
+    	BankSlips bankSlips = TestUtils.generateValidBankSlip();
     	String json = mapper.writeValueAsString(bankSlips);
     	
     	BankSlips newBankSlips =  bankSlipsService.create(bankSlips, bindingResult);
@@ -147,7 +144,7 @@ public class BankSlipsControllerTest {
     @Test
     void cancelBankSlip() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        BankSlips bankSlips = generateValidBankSlips();
+        BankSlips bankSlips = TestUtils.generateValidBankSlip();
         String json = mapper.writeValueAsString(bankSlips);
         
         BankSlips newBankSlips =  bankSlipsService.create(bankSlips, bindingResult);
