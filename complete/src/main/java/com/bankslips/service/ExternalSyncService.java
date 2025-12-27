@@ -8,14 +8,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bankslips.domain.exchangerate.ExchangeRate;
+import com.bankslips.domain.exchangerate.dto.ExchangeRateResponse;
 import com.bankslips.integration.exchange.ExchangeRateClient;
 import com.bankslips.repository.ExchangeRateRepository;
-import com.bankslips.service.interfaces.ApiService;
-import com.exchangerate.domain.ExchangeRate;
-import com.exchangerate.domain.dto.ExchangeRateResponse;
+import com.bankslips.service.interfaces.IApiService;
 
 @Service
-public class ExternalSyncService implements ApiService<ExchangeRateResponse> {
+public class ExternalSyncService implements IApiService<ExchangeRateResponse> {
 
 	@Autowired
     private ExchangeRateClient exchangeClient;

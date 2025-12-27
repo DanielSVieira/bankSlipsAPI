@@ -2,9 +2,12 @@ package com.bankslips.controller;
 
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,15 +23,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.banklips.domain.BankSlips;
 import com.bankslips.Application;
+import com.bankslips.config.TestAsyncConfig;
+import com.bankslips.domain.BankSlips;
 import com.bankslips.kafkaconfig.ExchangeRateConsumer;
-import com.bankslips.service.interfaces.BankSlipsService;
+import com.bankslips.service.interfaces.IBankSlipsService;
 import com.bankslips.testutils.TestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = Application.class)
+@SpringBootTest(classes = {Application.class, TestAsyncConfig.class})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
@@ -40,39 +44,47 @@ public class BankSlipsBulkControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockBean
-    private BankSlipsService bankSlipsService;
+    private IBankSlipsService bankSlipsService;
     
     @MockBean
     private ExchangeRateConsumer exchangeRateConsumer;
     
     @Test
     void bulkUploadSuccess() throws Exception {
-    	int totalRecords = 100;
-        List<BankSlips> bankSlipsList = TestUtils.generateValidBankSlipsList(totalRecords);
+        int totalRecords = 100;
+        List<BankSlips> bankSlipsList =
+            TestUtils.generateValidBankSlipsList(totalRecords);
+
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(bankSlipsList);
+
+        UUID jobId = UUID.randomUUID();
+
+        when(bankSlipsService.startBulkSave(anyList()))
+            .thenReturn(jobId);
 
         mockMvc.perform(post("/rest/bankslips/bulk/async")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
-            .andExpect(status().isAccepted());
+            .andExpect(status().isAccepted())
+            .andExpect(jsonPath("$.jobId").value(jobId.toString()))
+            .andExpect(jsonPath("$.message").value("Bulk upload started"));
 
-        verify(bankSlipsService).bulkSaveAsync(anyList());
+        verify(bankSlipsService).startBulkSave(anyList());
+        verifyNoMoreInteractions(bankSlipsService);
     }
+
     
     @Test
-    void bulkEmptyListUpload() throws Exception {
-        List<BankSlips> bankSlipsList = new ArrayList<BankSlips>();
-        ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(bankSlipsList);
-
+    void bulkEmptyListUploadShouldFail() throws Exception {
         mockMvc.perform(post("/rest/bankslips/bulk/async")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-            .andExpect(status().isAccepted());
+                .content("[]"))
+            .andExpect(status().isBadRequest());
 
-        verify(bankSlipsService).bulkSaveAsync(anyList());
+        verifyNoInteractions(bankSlipsService);
     }
+
     
     @Test
     void bulkInvalidPayloadUpload() throws Exception {

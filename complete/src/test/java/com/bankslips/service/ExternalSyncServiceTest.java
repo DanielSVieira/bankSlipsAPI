@@ -1,4 +1,4 @@
-package com.banslips.service;
+package com.bankslips.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,11 +30,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bankslips.Application;
+import com.bankslips.domain.exchangerate.dto.ExchangeRateResponse;
 import com.bankslips.integration.exchange.ExchangeRateClient;
 import com.bankslips.repository.ExchangeRateRepository;
 import com.bankslips.service.ExternalSyncService;
 import com.bankslips.testutils.TestUtils;
-import com.exchangerate.domain.dto.ExchangeRateResponse;
 
 import reactor.core.publisher.Mono;
 

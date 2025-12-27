@@ -1,4 +1,4 @@
-package com.banklips.domain;
+package com.bankslips.domain;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

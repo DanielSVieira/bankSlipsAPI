@@ -1,10 +1,10 @@
-package com.exchangerate.domain.dto;
+package com.bankslips.domain.exchangerate.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 
-import com.exchangerate.domain.ExchangeRate;
+import com.bankslips.domain.exchangerate.ExchangeRate;
 
 public record ExchangeRateResponse(
         String base,

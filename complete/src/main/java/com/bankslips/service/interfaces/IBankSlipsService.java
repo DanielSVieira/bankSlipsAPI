@@ -2,10 +2,10 @@ package com.bankslips.service.interfaces;
 
 import java.time.LocalDateTime;
 
-import com.banklips.domain.BankSlips;
+import com.bankslips.domain.BankSlips;
 import com.bankslips.enums.BankSlipsStatus;
 
-public interface BankSlipsService extends PersistanceService<BankSlips> {
+public interface IBankSlipsService extends IPersistanceService<BankSlips> {
     
 	default BankSlips paySlip(String id) {
 	    return edit(id, slip -> {

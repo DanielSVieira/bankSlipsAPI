@@ -1,10 +1,10 @@
 package com.bankslips.controller;
 
-import com.banklips.domain.BankSlips;
 import com.bankslips.Application;
 import com.bankslips.contants.ErrorMessages;
+import com.bankslips.domain.BankSlips;
 import com.bankslips.enums.BankSlipsStatus;
-import com.bankslips.service.interfaces.BankSlipsService;
+import com.bankslips.service.interfaces.IBankSlipsService;
 import com.bankslips.testutils.TestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
@@ -47,7 +47,7 @@ public class BankSlipsControllerTest {
     private BindingResult bindingResult;
     
     @Autowired
-    private BankSlipsService bankSlipsService;
+    private IBankSlipsService bankSlipsService;
 
 
     @Test

@@ -1,4 +1,4 @@
-package com.bankslips.service.implementation;
+package com.bankslips.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
@@ -18,40 +19,58 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.banklips.domain.BankSlips;
 import com.bankslips.contants.ErrorMessages;
+import com.bankslips.domain.BankSlips;
+import com.bankslips.domain.bulkupload.BulkJobStatus;
+import com.bankslips.domain.bulkupload.BulkUploadFailure;
+import com.bankslips.domain.bulkupload.BulkUploadJob;
 import com.bankslips.enums.BankSlipsStatus;
 import com.bankslips.exception.BankSlipsContraintViolationException;
 import com.bankslips.exception.BankSlipsNotFoundException;
 import com.bankslips.repository.BankSlipsRepository;
-import com.bankslips.service.interfaces.BankSlipsService;
+import com.bankslips.repository.FailureJobsRepository;
+import com.bankslips.repository.JobsRepository;
+import com.bankslips.service.interfaces.IBankSlipsService;
 import com.bankslips.utils.DateUtils;
 import com.bankslips.utils.FinanceMathUtils;
-import com.bankslips.validator.BankSlipsValidator;
 
 import jakarta.transaction.Transactional;
 
 
 @Service
-public class BankSlipsServiceImplementation implements BankSlipsService {
-	
+public class BankSlipsService implements IBankSlipsService {
 	
 	@Autowired
 	private BankSlipsRepository bankSlipsRepository;
 	
 	@Autowired
 	private ExecutorService executor;
+
+	@Autowired
+	private JobsRepository jobsRepository;
+	
+    @Autowired
+    private BankSlipsAsyncService asyncService;
+	
+    @Autowired
+    @Lazy
+    private BankSlipsService self;
+    
+    @Autowired
+    private BankSlipsValidator bankSlipsValidator;
 	
 	public BankSlips create(BankSlips bankSlips, BindingResult bindingResult)  {
-		if (BankSlipsValidator.jsonContainsErrors(bindingResult)) {
-			List<String> errorMessages = BankSlipsValidator.getErrorMessages(bindingResult);
+		if (bankSlipsValidator.jsonContainsErrors(bindingResult)) {
+			List<String> errorMessages = bankSlipsValidator.getErrorMessages(bindingResult);
 			throw new BankSlipsContraintViolationException(errorMessages.toString(), HttpStatus.UNPROCESSABLE_ENTITY);
 		}
 		return bankSlipsRepository.save(bankSlips);	
@@ -79,8 +98,6 @@ public class BankSlipsServiceImplementation implements BankSlipsService {
 		}
 	}
 	
-	//TODO handle gracefully failed records
-	//TODO return a list of records not persisted with the root cause
 	/*
 	 * bulk save synchronous
 	 */
@@ -95,56 +112,11 @@ public class BankSlipsServiceImplementation implements BankSlipsService {
 		
 	}
 	
-    //TODO to get a way retrieve a way 
-    /**
-     * Bulk save in chunks asynchronously
-     */
-    public CompletableFuture<Map<String, Object>> bulkSaveAsync(List<BankSlips> slips) {
-        int batchSize = 500; // adjustable based on memory/DB
-        List<BankSlips> uniqueSlips = removeDuplication(slips);
-        List<List<BankSlips>> batches = createSlipBatches(uniqueSlips, batchSize);
-        
-        List<CompletableFuture<Void>> futures = batches.stream()
-            .map(batch -> CompletableFuture.runAsync(() -> {
-            	bankSlipsRepository.saveAll(batch); // save batch in one DB call
-            }, executor))
-            .collect(Collectors.toList());
-
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenApply(v -> Map.of(
-                    "uploaded", slips.size(),
-                    "timestamp", LocalDateTime.now()
-                ));
-    }
-
-
-	private List<List<BankSlips>> createSlipBatches(List<BankSlips> slips, int batchSize) {
-		List<List<BankSlips>> batches = 
-        	    IntStream.range(0, (slips.size() + batchSize - 1) / batchSize)
-        	             .mapToObj(i -> slips.subList(i * batchSize, Math.min((i + 1) * batchSize, slips.size())))
-        	             .toList();
-		return batches;
-	}
-	
-	public List<BankSlips> removeDuplication(Collection<BankSlips> slips) {
-	    Set<String> seenExternalIds = new HashSet<>();
-	    List<BankSlips> uniqueSlips = new ArrayList<>(slips.size());
-
-	    for (BankSlips slip : slips) {
-	        if (seenExternalIds.add(slip.getExternalId())) {
-	            uniqueSlips.add(slip);
-	        }
-	    }
-
-	    return uniqueSlips;
-	}
-	
-
 	@Override
 	@Transactional
 	public BankSlips edit(String id, Consumer<BankSlips> extraUpdates) {
         BankSlips slip = bankSlipsRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bank slip not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ErrorMessages.BANKSLIPS_NOT_FOUND));
         
         BankSlipsStatus oldStatus = slip.getStatus();
         extraUpdates.accept(slip);
@@ -163,5 +135,23 @@ public class BankSlipsServiceImplementation implements BankSlipsService {
 	            "Bank slip status can only be changed if it is pending");
 	    }
 	}
+
+	@Override
+	public UUID startBulkSave(List<BankSlips> slips) {
+	    BulkUploadJob job = new BulkUploadJob();
+	    job.setStatus(BulkJobStatus.PENDING);
+	    job.setTotalRecords(slips.size());
+	    job.setStartedAt(LocalDateTime.now());
+
+	    jobsRepository.save(job);
+
+	    asyncService.bulkSaveAsync(job.getId(), slips);
+
+	    return job.getId();
+	}
+	
+    public void saveAll(List<BankSlips> slips) {
+        bankSlipsRepository.saveAll(slips);
+    }
 
 }

@@ -3,8 +3,8 @@ package com.bankslips.integration.exchange;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.bankslips.domain.exchangerate.dto.ExchangeRateResponse;
 import com.bankslips.exception.ExternalApiUnavailableException;
-import com.exchangerate.domain.dto.ExchangeRateResponse;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;

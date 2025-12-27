@@ -1,6 +1,5 @@
 package com.bankslips.contants;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 @Component
 public class ErrorMessages {
@@ -14,5 +13,6 @@ public class ErrorMessages {
 	public static final String CUSTOMER_NOT_PROVIDED = "Customer must be informed";
 	public static final String CUSTOMER_INVALID_SIZE = "Customer must have at least 3 characters and not more than 255 characters";
 	public static final String INVALID_LOCAL_DATE_PROVIDED = "Provided date must not be null";
+	public static final String DUPLICATED_EXTERNAL_ID = "Duplicated externalId";
 	
 }

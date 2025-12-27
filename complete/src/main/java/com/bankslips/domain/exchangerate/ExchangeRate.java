@@ -1,4 +1,4 @@
-package com.exchangerate.domain;
+package com.bankslips.domain.exchangerate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

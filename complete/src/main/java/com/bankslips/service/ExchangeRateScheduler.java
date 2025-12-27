@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.bankslips.config.KafkaTopicProperties;
-import com.exchangerate.domain.dto.ExchangeRateResponse;
+import com.bankslips.domain.exchangerate.dto.ExchangeRateResponse;
 
 import lombok.extern.slf4j.Slf4j;
 

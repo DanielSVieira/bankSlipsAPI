@@ -5,7 +5,8 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.exchangerate.domain.ExchangeRate;
+
+import com.bankslips.domain.exchangerate.ExchangeRate;
 
 @Repository
 public interface ExchangeRateRepository extends JpaRepository<ExchangeRate, Long> {

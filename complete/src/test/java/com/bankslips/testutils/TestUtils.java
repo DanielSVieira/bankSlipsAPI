@@ -11,8 +11,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.banklips.domain.BankSlips;
-import com.exchangerate.domain.dto.ExchangeRateResponse;
+import com.bankslips.domain.BankSlips;
+import com.bankslips.domain.exchangerate.dto.ExchangeRateResponse;
 
 public class TestUtils {
 	

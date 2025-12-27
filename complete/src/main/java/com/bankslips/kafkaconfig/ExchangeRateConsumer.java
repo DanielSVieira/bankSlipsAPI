@@ -7,8 +7,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import com.bankslips.domain.exchangerate.dto.ExchangeRateResponse;
 import com.bankslips.repository.ExchangeRateRepository;
-import com.exchangerate.domain.dto.ExchangeRateResponse;
 
 import lombok.extern.slf4j.Slf4j;
 

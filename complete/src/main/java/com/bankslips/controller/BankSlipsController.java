@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.banklips.domain.BankSlips;
-import com.bankslips.service.interfaces.BankSlipsService;
+import com.bankslips.domain.BankSlips;
+import com.bankslips.service.interfaces.IBankSlipsService;
 
 import jakarta.validation.Valid;
 
@@ -26,7 +26,7 @@ import jakarta.validation.Valid;
 public class BankSlipsController {
 
 	@Autowired
-	private BankSlipsService bankSlipsService;
+	private IBankSlipsService bankSlipsService;
 
 	@RequestMapping(value = "/bankslips/", method = RequestMethod.POST)
 	public ResponseEntity<BankSlips> create(@RequestBody @Valid BankSlips bankSlips, BindingResult bindingResult) {
