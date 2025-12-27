@@ -1,13 +1,17 @@
 package com.bankslips.domain;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 import org.hibernate.annotations.GenericGenerator;
 
 import com.bankslips.contants.ErrorMessages;
 import com.bankslips.enums.BankSlipsStatus;
+import com.bankslips.utils.FinanceMathUtils;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -97,5 +101,17 @@ public class BankSlips {
     
     @Version
     private Long version;
+    
+    public void applyFineIfPending(LocalDate today) {
+        if (status != BankSlipsStatus.PENDING) {
+            return;
+        }
+        LocalDate due = dueDate.toInstant()
+                               .atZone(ZoneId.systemDefault())
+                               .toLocalDate();
+        long daysExpired = Math.max(0,ChronoUnit.DAYS.between(due, today));
+        setFine(FinanceMathUtils.calculateSimpleFine(totalInCents, daysExpired));
+    }
+
 	
 }
