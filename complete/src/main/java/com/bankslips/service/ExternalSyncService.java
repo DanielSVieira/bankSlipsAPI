@@ -27,11 +27,7 @@ public class ExternalSyncService implements IApiService<ExchangeRateResponse> {
 
 	@Override
 	public CompletableFuture<ExchangeRateResponse> syncAsync(String currency) {
-	    return CompletableFuture.supplyAsync(() -> {
-	        ExchangeRateResponse response = exchangeClient.getRates(currency).block();
-	        saveIfNotExists(response);
-	        return response;
-	    }, executor);
+	    return CompletableFuture.supplyAsync(() -> exchangeClient.getRates(currency).block(), executor);
 	}
 
 	@Override

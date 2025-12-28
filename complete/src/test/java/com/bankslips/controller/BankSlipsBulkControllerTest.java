@@ -5,16 +5,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
+
 
 import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -49,6 +53,8 @@ public class BankSlipsBulkControllerTest {
     
     @MockBean
     private ExchangeRateConsumer exchangeRateConsumer;
+    
+    private final ObjectMapper mapper = new ObjectMapper();
     
     @Test
     void bulkUploadSuccess() throws Exception {
@@ -96,5 +102,43 @@ public class BankSlipsBulkControllerTest {
             .andExpect(status().isBadRequest());
     }        
     
+    @Test
+    void bulkMalformedJsonUploadShouldFail() throws Exception {
+        String invalidJson = "[{ \"id\": 1, \"amount\": 100 }"; // missing closing bracket
+
+        mockMvc.perform(post("/rest/bankslips/bulk/async")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(bankSlipsAsyncService);
+    }
+
+    @Test
+    void bulkEmptyContentShouldFail() throws Exception {
+        mockMvc.perform(post("/rest/bankslips/bulk/async")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(""))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(bankSlipsAsyncService);
+    }
+
+    @Test
+    void bulkVeryLargePayload() throws Exception {
+        List<BankSlips> largeList = TestUtils.generateValidBankSlipsList(10000);
+        String json = mapper.writeValueAsString(largeList);
+        UUID jobId = UUID.randomUUID();
+
+        when(bankSlipsAsyncService.startAsyncBulkUpload(anyList())).thenReturn(jobId);
+
+        mockMvc.perform(post("/rest/bankslips/bulk/async")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.jobId").value(jobId.toString()));
+
+        verify(bankSlipsAsyncService).startAsyncBulkUpload(anyList());
+    }
 
 }

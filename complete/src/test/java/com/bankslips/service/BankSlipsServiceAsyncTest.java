@@ -17,12 +17,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.bankslips.Application;
 import com.bankslips.config.TestAsyncConfig;
@@ -31,8 +28,6 @@ import com.bankslips.domain.bulkupload.BulkJobStatus;
 import com.bankslips.domain.bulkupload.BulkUploadFailure;
 import com.bankslips.domain.bulkupload.BulkUploadJob;
 import com.bankslips.repository.BankSlipsRepository;
-import com.bankslips.service.BulkJobService;
-import com.bankslips.service.interfaces.IBankSlipsService;
 import com.bankslips.service.interfaces.IPersistenceBulkService;
 import com.bankslips.testutils.TestUtils;
 

@@ -31,23 +31,20 @@ public class ExchangeRateScheduler {
 	private final List<String> CURRENCIES_LIST = List.of("USD", "EUR", "BRL");
 
 
-	@Scheduled(fixedRate = 300000) // every 5 minutes
+	@Scheduled(fixedRate = 300000) //5 minutes
 	public void syncExchangeRates() {
 	    for (String currency : CURRENCIES_LIST) {
-	        exchangeRateService.syncAsync(currency) 
+	        exchangeRateService.syncAsync(currency)
 	            .thenAccept(response -> {
-	            	log.debug("SUCCESS: Generated DTO for " + currency + ": " + response);
-	                try {
-						kafkaTemplate.send(kafkaTopics.getExchangeRates(), response); 
-	                } catch (Exception e) {
-	                    System.err.println("KAFKA ERROR: Could not send " + currency + " but DTO is valid.");
-	                }
+	                log.debug("Publishing to Kafka: " + currency);
+	                kafkaTemplate.send(kafkaTopics.getExchangeRates(), response);
 	            })
 	            .exceptionally(ex -> {
-	                System.err.println("SERVICE ERROR for " + currency + ": " + ex.getMessage());
+	                log.error("Error fetching rates for " + currency, ex);
 	                return null;
 	            });
 	    }
 	}
+
 
 }

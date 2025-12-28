@@ -34,8 +34,10 @@ public class ExchangeRateConsumer {
         containerFactory = "${spring.kafka.topics.exchange-rates-container-factory}"
     )
     public void consume(ExchangeRateResponse response) {
+    	if (response == null) return; 
         try {
             exchangeRateRepository.save(response.toEntity());
+            log.debug("Saved exchange rate to DB: " + response.base() + " on " + response.date());
         } catch (DataIntegrityViolationException e) {
             log.info("Exchange rate already exists for {} on {}", response.base(), response.date());
         }

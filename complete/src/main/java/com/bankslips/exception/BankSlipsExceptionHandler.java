@@ -3,6 +3,7 @@ package com.bankslips.exception;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -60,6 +61,14 @@ public class BankSlipsExceptionHandler {
         error.put(ErrorMessages.ERROR, ErrorMessages.VALIDATION_FAILED);
         error.put(ErrorMessages.MESSAGE, ex.getMessage());
         return ResponseEntity.badRequest().body(error);
+    }
+    
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<?> handleDatabaseConnectionException(DataAccessException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put(ErrorMessages.ERROR, ErrorMessages.INTERNAL_SERVER_ERROR);
+        error.put(ErrorMessages.MESSAGE, ex.getMessage());
+        return ResponseEntity.internalServerError().body(error);
     }
 
 }

@@ -1,6 +1,6 @@
 package com.bankslips.service;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
@@ -9,15 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.bankslips.Application;
+import com.bankslips.domain.exchangerate.dto.ExchangeRateResponse;
 import com.bankslips.integration.exchange.ExchangeRateClient;
-import com.bankslips.repository.ExchangeRateRepository;
-import com.bankslips.service.ExternalSyncService;
 import com.bankslips.testutils.TestUtils;
 
 import jakarta.transaction.Transactional;
@@ -37,19 +35,16 @@ class ExternalSyncServiceIntegrationTest {
     @Autowired
     private ExternalSyncService externalSyncService;
 
-    @Autowired
-    private ExchangeRateRepository repository;
-
     @MockBean
     ExchangeRateClient exchangeClient;
 
     @Test
     void shouldPersistRate() {
         when(exchangeClient.getRates("USD"))
-            .thenReturn(Mono.just(TestUtils.createExchangeRateMockData()));
+        .thenReturn(Mono.just(TestUtils.createExchangeRateMockData()));
 
-        externalSyncService.syncAsync("USD").join();
+        ExchangeRateResponse response = externalSyncService.syncAsync("USD").join();
 
-        assertTrue(repository.findByCurrency("USD").isPresent());
+	    assertEquals("USD", response.base());
     }
 }
