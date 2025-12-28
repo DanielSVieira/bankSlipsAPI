@@ -61,15 +61,5 @@ public class BankSlipsExceptionHandler {
         error.put(ErrorMessages.MESSAGE, ex.getMessage());
         return ResponseEntity.badRequest().body(error);
     }
-//    
-//    @ExceptionHandler(IllegalArgumentException.class)
-//    public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException ex) {
-//        Map<String, String> error = new HashMap<>();
-//        error.put(ErrorMessages.ERROR, ErrorMessages.ILLEGAL_ARGUMENTS_ERROR);
-//        error.put(ErrorMessages.MESSAGE, ex.getMessage());
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-//    }
-    
-
 
 }
