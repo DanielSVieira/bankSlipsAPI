@@ -1,11 +1,12 @@
 package com.bankslips.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +15,13 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.bankslips.domain.BankSlips;
-import com.bankslips.domain.bulkupload.BulkJobStatus;
 import com.bankslips.domain.bulkupload.BulkUploadJob;
-import com.bankslips.repository.JobsRepository;
+import com.bankslips.repository.BankSlipsRepository;
 import com.bankslips.service.interfaces.IBankSlipsService;
+import com.bankslips.service.interfaces.IPersistenceBulkService;
 
 @Service
-public class BankSlipsAsyncService {
+public class BankSlipsBulkService implements IPersistenceBulkService<BankSlips> {
 
     @Autowired
     private BankSlipsValidator validatorService;
@@ -29,16 +30,19 @@ public class BankSlipsAsyncService {
     private IBankSlipsService bankSlipsService;
 
     @Autowired
-    private FailureRecorderService failureRecorder;
-
+    private BulkJobService bulkJobService;
+    
     @Autowired
-    private JobsRepository jobsRepository;
+    private BankSlipsRepository bankSlipsRepository;
+    
+	@Autowired
+	private ExecutorService executor;
 
     private static final int BATCH_SIZE = 500;
 
     @Async
     public CompletableFuture<Void> bulkSaveAsync(UUID jobId, List<BankSlips> slips) {
-        BulkUploadJob job = startJob(jobId);
+        BulkUploadJob job = bulkJobService.startJob(jobId);
 
         List<BankSlips> validSlips = validatorService.sanitizeList(slips, job);
         List<List<BankSlips>> batches = createBatches(validSlips, BATCH_SIZE);
@@ -48,50 +52,27 @@ public class BankSlipsAsyncService {
         List<CompletableFuture<Void>> futures = batches.stream()
                 .map(batch -> CompletableFuture.runAsync(() -> processBatch(batch, job), executor)
                         .exceptionally(ex -> {
-                            handleBatchFailure(batch, job, ex);
+                        	bulkJobService.handleBatchFailure(batch, job, ex);
                             return null;
                         }))
                 .toList();
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenRun(() -> finalizeJob(job));
+                .thenRun(() -> bulkJobService.finalizeJob(job));
     }
 
-    private BulkUploadJob startJob(UUID jobId) {
-        BulkUploadJob job = jobsRepository.findById(jobId)
-                .orElseThrow(() -> new IllegalArgumentException("Job not found: " + jobId));
-        job.setStatus(BulkJobStatus.RUNNING);
-        job.setStartedAt(LocalDateTime.now());
-        jobsRepository.save(job);
-        return job;
-    }
 
-    private void processBatch(List<BankSlips> batch, BulkUploadJob job) {
-        try {
-            bankSlipsService.saveAll(batch); // transactional save
-            synchronized (job) {
-                job.setProcessedRecords(job.getProcessedRecords() + batch.size());
-                job.setSuccessRecords(job.getSuccessRecords() + batch.size());
-            }
-        } catch (Exception e) {
-            handleBatchFailure(batch, job, e);
-        }
-    }
-
-    private void handleBatchFailure(List<BankSlips> batch, BulkUploadJob job, Throwable ex) {
-        batch.forEach(slip -> failureRecorder.recordFailure(job, slip, ex.getMessage()));
-        synchronized (job) {
-            job.setProcessedRecords(job.getProcessedRecords() + batch.size());
-            job.setFailedRecords(job.getFailedRecords() + batch.size());
-        }
-        jobsRepository.save(job); // checkpoint after failure
-    }
-
-    private void finalizeJob(BulkUploadJob job) {
-        job.setFinishedAt(LocalDateTime.now());
-        job.setStatus(job.getFailedRecords() > 0 ? BulkJobStatus.COMPLETED_WITH_ERRORS : BulkJobStatus.COMPLETED);
-        jobsRepository.save(job);
-    }
+	    private void processBatch(List<BankSlips> batch, BulkUploadJob job) {
+	        try {
+	            bankSlipsService.saveAll(batch); // transactional save
+	            synchronized (job) {
+	                job.setProcessedRecords(job.getProcessedRecords() + batch.size());
+	                job.setSuccessRecords(job.getSuccessRecords() + batch.size());
+	            }
+	        } catch (Exception e) {
+	        	bulkJobService.handleBatchFailure(batch, job, e);
+	        }
+	    }
 
     /*
      * add the records into batches to be imported
@@ -102,4 +83,32 @@ public class BankSlipsAsyncService {
                 .mapToObj(i -> slips.subList(i * batchSize, Math.min((i + 1) * batchSize, slips.size())))
                 .toList();
     }
+
+	
+	@Override
+	public UUID startAsyncBulkUpload(List<BankSlips> slips) {
+	    UUID jobId = bulkJobService.startJob(slips.size());
+
+	    bulkSaveAsync(jobId, slips);
+
+	    return jobId;
+	}
+
+	/*
+	 * bulk save synchronous
+	 */
+	@Override
+	public void bulkSaveInParallel(List<BankSlips> slips) { 
+        List<CompletableFuture<Void>> futures = slips.stream()
+                .map(slip -> CompletableFuture.runAsync(() -> {
+                	bankSlipsRepository.save(slip);
+                }, executor))
+                .collect(Collectors.toList());
+
+            CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
+		
+	}
+
+    
+
 }

@@ -27,7 +27,7 @@ import com.bankslips.Application;
 import com.bankslips.config.TestAsyncConfig;
 import com.bankslips.domain.BankSlips;
 import com.bankslips.kafkaconfig.ExchangeRateConsumer;
-import com.bankslips.service.interfaces.IBankSlipsService;
+import com.bankslips.service.interfaces.IPersistenceBulkService;
 import com.bankslips.testutils.TestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -43,8 +43,9 @@ public class BankSlipsBulkControllerTest {
 	
     @Autowired
     private MockMvc mockMvc;
+//    
     @MockBean
-    private IBankSlipsService bankSlipsService;
+    private IPersistenceBulkService<BankSlips> bankSlipsAsyncService;
     
     @MockBean
     private ExchangeRateConsumer exchangeRateConsumer;
@@ -60,7 +61,7 @@ public class BankSlipsBulkControllerTest {
 
         UUID jobId = UUID.randomUUID();
 
-        when(bankSlipsService.startBulkSave(anyList()))
+        when(bankSlipsAsyncService.startAsyncBulkUpload(anyList()))
             .thenReturn(jobId);
 
         mockMvc.perform(post("/rest/bankslips/bulk/async")
@@ -70,8 +71,8 @@ public class BankSlipsBulkControllerTest {
             .andExpect(jsonPath("$.jobId").value(jobId.toString()))
             .andExpect(jsonPath("$.message").value("Bulk upload started"));
 
-        verify(bankSlipsService).startBulkSave(anyList());
-        verifyNoMoreInteractions(bankSlipsService);
+        verify(bankSlipsAsyncService).startAsyncBulkUpload(anyList());
+        verifyNoMoreInteractions(bankSlipsAsyncService);
     }
 
     
@@ -82,7 +83,7 @@ public class BankSlipsBulkControllerTest {
                 .content("[]"))
             .andExpect(status().isBadRequest());
 
-        verifyNoInteractions(bankSlipsService);
+        verifyNoInteractions(bankSlipsAsyncService);
     }
 
     

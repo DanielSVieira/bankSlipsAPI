@@ -18,7 +18,7 @@ import com.bankslips.domain.BankSlips;
 import com.bankslips.domain.bulkupload.BulkUploadFailure;
 import com.bankslips.domain.bulkupload.BulkUploadJob;
 import com.bankslips.service.BulkJobService;
-import com.bankslips.service.interfaces.IBankSlipsService;
+import com.bankslips.service.interfaces.IPersistenceBulkService;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -27,9 +27,8 @@ import jakarta.validation.constraints.NotNull;
 @RequestMapping("/rest")
 public class BankSlipsBulkController {
 
-    
-    @Autowired
-    private IBankSlipsService bankSlipsService;
+	@Autowired
+	private IPersistenceBulkService<BankSlips> bankSlipsAsyncService;
     
     @Autowired
     private BulkJobService bulkJobService;
@@ -43,7 +42,7 @@ public class BankSlipsBulkController {
 		        .body(Map.of("message", "Bulk upload list cannot be empty"));
 		}
 		
-    	bankSlipsService.bulkSave(slips);
+    	bankSlipsAsyncService.bulkSaveInParallel(slips);
 
 
         Map<String, Object> response = Map.of(
@@ -61,7 +60,7 @@ public class BankSlipsBulkController {
 		        .body(Map.of("message", "Bulk upload list cannot be empty"));
 		}
 		
-		UUID jobId = bankSlipsService.startBulkSave(slips);
+		UUID jobId = bankSlipsAsyncService.startAsyncBulkUpload(slips);
 		
         return ResponseEntity.accepted()
                 .body(Map.of("message", "Bulk upload started", 
@@ -89,7 +88,7 @@ public class BankSlipsBulkController {
 	}
 	
 	@RequestMapping(value = "/bankslips/bulk/{jobId}/failures", method = RequestMethod.GET)
-	public List<BulkUploadFailure> getFailures(@PathVariable @NotNull UUID jobId) {
+	public List<BulkUploadFailure> getFailures(@PathVariable UUID jobId) {
 	    return bulkJobService.getFailureJobById(jobId);
 	}
 

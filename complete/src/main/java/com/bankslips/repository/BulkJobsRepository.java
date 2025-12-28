@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.bankslips.domain.bulkupload.BulkUploadJob;
 
 @Repository
-public interface JobsRepository extends JpaRepository<BulkUploadJob, UUID> {
+public interface BulkJobsRepository extends JpaRepository<BulkUploadJob, UUID> {
 	
 	public Optional<BulkUploadJob> findById(UUID id);
 

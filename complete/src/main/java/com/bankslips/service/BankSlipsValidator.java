@@ -26,7 +26,7 @@ public class BankSlipsValidator {
     private Validator beanValidator;
 
     @Autowired
-    private FailureRecorderService failureRecorder;
+    private BulkJobService bulkJobService;
 
     /*
      * Validate records, and return a sanitized list to be imported
@@ -42,7 +42,7 @@ public class BankSlipsValidator {
             boolean isValid = true;
 
             if (!seenExternalIds.add(slip.getExternalId())) {
-                failureRecorder.recordFailure(job, slip, ErrorMessages.DUPLICATED_EXTERNAL_ID);
+                bulkJobService.recordFailure(job, slip, ErrorMessages.DUPLICATED_EXTERNAL_ID);
                 continue;
             }
 
@@ -60,7 +60,7 @@ public class BankSlipsValidator {
 		if (!violations.isEmpty()) {
 		    isValid = false;
 		    for (var violation : violations) {
-		        failureRecorder.recordFailure(job, slip, violation.getMessage());
+		        bulkJobService.recordFailure(job, slip, violation.getMessage());
 		    }
 		}
 		return isValid;

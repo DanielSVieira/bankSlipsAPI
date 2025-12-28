@@ -22,7 +22,7 @@ public class BankSlipsExceptionHandler {
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
 
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorMessages.BANKSLIPS_NOT_PROVIDED);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage() + ErrorMessages.BANKSLIPS_NOT_PROVIDED);
 	}
 
 	@ExceptionHandler(InvalidFormatException.class)

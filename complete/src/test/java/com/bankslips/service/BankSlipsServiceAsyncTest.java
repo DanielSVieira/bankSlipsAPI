@@ -33,6 +33,7 @@ import com.bankslips.domain.bulkupload.BulkUploadJob;
 import com.bankslips.repository.BankSlipsRepository;
 import com.bankslips.service.BulkJobService;
 import com.bankslips.service.interfaces.IBankSlipsService;
+import com.bankslips.service.interfaces.IPersistenceBulkService;
 import com.bankslips.testutils.TestUtils;
 
 @ExtendWith(SpringExtension.class)
@@ -46,8 +47,8 @@ import com.bankslips.testutils.TestUtils;
 	})
 public class BankSlipsServiceAsyncTest {
 	
-    @Autowired
-    private IBankSlipsService bankSlipsService;
+	  @Autowired
+	  private IPersistenceBulkService<BankSlips> bankSlipsAsyncService;
     
     @Autowired
     private BulkJobService jobService;
@@ -69,7 +70,7 @@ public class BankSlipsServiceAsyncTest {
         List<BankSlips> slips =
             TestUtils.generateValidBankSlipsList(totalRecords);
 
-        UUID jobId = bankSlipsService.startBulkSave(slips);
+        UUID jobId = bankSlipsAsyncService.startAsyncBulkUpload(slips);
 
         BulkUploadJob job = waitForJobCompletion(jobId);
 
@@ -93,7 +94,7 @@ public class BankSlipsServiceAsyncTest {
 
         assertEquals(totalRecords + 1, slips.size());
 
-        UUID jobId = bankSlipsService.startBulkSave(slips);
+        UUID jobId = bankSlipsAsyncService.startAsyncBulkUpload(slips);
 
         BulkUploadJob job = waitForJobCompletion(jobId);
 
@@ -120,7 +121,7 @@ public class BankSlipsServiceAsyncTest {
 
         assertEquals(totalRecords + 1, slips.size());
 
-        UUID jobId = bankSlipsService.startBulkSave(slips);
+        UUID jobId = bankSlipsAsyncService.startAsyncBulkUpload(slips);
 
         BulkUploadJob job = waitForJobCompletion(jobId);
 

@@ -4,7 +4,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +29,7 @@ public class ExternalSyncService implements IApiService<ExchangeRateResponse> {
 	public CompletableFuture<ExchangeRateResponse> syncAsync(String currency) {
 	    return CompletableFuture.supplyAsync(() -> {
 	        ExchangeRateResponse response = exchangeClient.getRates(currency).block();
-	        exchangeRateRepository.save(response.toEntity());
+	        saveIfNotExists(response);
 	        return response;
 	    }, executor);
 	}

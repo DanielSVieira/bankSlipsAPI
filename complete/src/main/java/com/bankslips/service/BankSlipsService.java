@@ -1,12 +1,8 @@
 package com.bankslips.service;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -30,10 +26,9 @@ import com.bankslips.enums.BankSlipsStatus;
 import com.bankslips.exception.BankSlipsContraintViolationException;
 import com.bankslips.exception.BankSlipsNotFoundException;
 import com.bankslips.repository.BankSlipsRepository;
-import com.bankslips.repository.JobsRepository;
+import com.bankslips.repository.BulkJobsRepository;
 import com.bankslips.service.interfaces.IBankSlipsService;
-import com.bankslips.utils.DateUtils;
-import com.bankslips.utils.FinanceMathUtils;
+import com.bankslips.service.interfaces.IPersistenceBulkService;
 
 import jakarta.transaction.Transactional;
 
@@ -43,15 +38,6 @@ public class BankSlipsService implements IBankSlipsService {
 	
 	@Autowired
 	private BankSlipsRepository bankSlipsRepository;
-	
-	@Autowired
-	private ExecutorService executor;
-
-	@Autowired
-	private JobsRepository jobsRepository;
-	
-    @Autowired
-    private BankSlipsAsyncService asyncService;
 	
     @Autowired
     @Lazy
@@ -67,6 +53,10 @@ public class BankSlipsService implements IBankSlipsService {
 		}
 		return bankSlipsRepository.save(bankSlips);	
 	}
+	
+	public BankSlips create(BankSlips bankSlips)  {
+		return bankSlipsRepository.save(bankSlips);	
+	}	
 	
 	@Override
 	public Page<BankSlips> list(Pageable pageable) {
@@ -84,20 +74,6 @@ public class BankSlipsService implements IBankSlipsService {
 	    
 	    bankSlips.applyFineIfPending(LocalDate.now());
 	    return bankSlips;
-	}
-	
-	/*
-	 * bulk save synchronous
-	 */
-	public void bulkSave(List<BankSlips> slips) { 
-        List<CompletableFuture<Void>> futures = slips.stream()
-                .map(slip -> CompletableFuture.runAsync(() -> {
-                	bankSlipsRepository.save(slip);
-                }, executor))
-                .collect(Collectors.toList());
-
-            CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
-		
 	}
 	
 	@Override
@@ -122,20 +98,6 @@ public class BankSlipsService implements IBankSlipsService {
 	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 	            "Bank slip status can only be changed if it is pending");
 	    }
-	}
-
-	@Override
-	public UUID startBulkSave(List<BankSlips> slips) {
-	    BulkUploadJob job = new BulkUploadJob();
-	    job.setStatus(BulkJobStatus.PENDING);
-	    job.setTotalRecords(slips.size());
-	    job.setStartedAt(LocalDateTime.now());
-
-	    jobsRepository.save(job);
-
-	    asyncService.bulkSaveAsync(job.getId(), slips);
-
-	    return job.getId();
 	}
 	
     public void saveAll(List<BankSlips> slips) {
