@@ -4,6 +4,7 @@ package com.bankslips.repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,7 @@ import com.bankslips.domain.BankSlips;
 import com.bankslips.enums.BankSlipsStatus;
 
 @Repository
-public interface BankSlipsRepository extends JpaRepository<BankSlips, String> {
+public interface BankSlipsRepository extends JpaRepository<BankSlips, UUID> {
 
 	Page<BankSlips> findAll(Pageable pageable);
 	Long countByStatus(BankSlipsStatus status);

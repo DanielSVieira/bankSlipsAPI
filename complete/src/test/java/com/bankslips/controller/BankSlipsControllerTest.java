@@ -108,7 +108,8 @@ public class BankSlipsControllerTest {
     	BankSlips bankSlips = TestUtils.generateValidBankSlip();
     	String json = mapper.writeValueAsString(bankSlips);
     	
-    	mockMvc.perform(put("/rest/bankslips/pay/9999")
+    	
+    	mockMvc.perform(put("/rest/bankslips/pay/"+UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
         .andDo(print())

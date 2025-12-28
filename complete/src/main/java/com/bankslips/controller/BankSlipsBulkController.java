@@ -21,6 +21,7 @@ import com.bankslips.service.BulkJobService;
 import com.bankslips.service.interfaces.IBankSlipsService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/rest")
@@ -69,7 +70,7 @@ public class BankSlipsBulkController {
     }
 	
 	@RequestMapping(value = "/bankslips/bulk/status/{jobId}", method = RequestMethod.GET)
-	public ResponseEntity<?> getStatus(@PathVariable UUID jobId) {
+	public ResponseEntity<?> getStatus(@PathVariable @NotNull UUID jobId) {
 
 	    Optional<BulkUploadJob> jobOptional = bulkJobService.getJobById(jobId);
 	    BulkUploadJob job = jobOptional.get();
@@ -88,7 +89,7 @@ public class BankSlipsBulkController {
 	}
 	
 	@RequestMapping(value = "/bankslips/bulk/{jobId}/failures", method = RequestMethod.GET)
-	public List<BulkUploadFailure> getFailures(@PathVariable UUID jobId) {
+	public List<BulkUploadFailure> getFailures(@PathVariable @NotNull UUID jobId) {
 	    return bulkJobService.getFailureJobById(jobId);
 	}
 

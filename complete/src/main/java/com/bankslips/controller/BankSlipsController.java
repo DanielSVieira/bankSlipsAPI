@@ -20,6 +20,7 @@ import com.bankslips.domain.BankSlips;
 import com.bankslips.service.interfaces.IBankSlipsService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/rest")
@@ -43,13 +44,13 @@ public class BankSlipsController {
 
 	@RequestMapping(value = "/bankslips/{bankSlipsId}", method = RequestMethod.GET)
 	public ResponseEntity<BankSlips> show(@PathVariable("bankSlipsId") UUID bankSlipsId) {
-		BankSlips bankSlips = bankSlipsService.show(bankSlipsId.toString());
+		BankSlips bankSlips = bankSlipsService.show(bankSlipsId);
 		return new ResponseEntity<BankSlips>(bankSlips, HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/bankslips/{bankSlipsId}", method = RequestMethod.PUT)
-	public ResponseEntity<BankSlips> update(@RequestBody BankSlips bankSlips,
-			@PathVariable("bankSlipsId") String bankSlipsId) {
+	public ResponseEntity<BankSlips> update(@RequestBody @Valid BankSlips bankSlips,
+			@PathVariable("bankSlipsId") UUID bankSlipsId) {
 
 		BankSlips retrievedBankSlips = bankSlipsService.show(bankSlipsId);
 		BankSlips paidBankSlips = bankSlipsService.updateBankSlipsStatus(retrievedBankSlips, bankSlips.getStatus());
@@ -58,7 +59,7 @@ public class BankSlipsController {
 	
 	@RequestMapping(value = "/bankslips/cancel/{bankSlipsId}", method = RequestMethod.PUT)
 	public ResponseEntity<BankSlips> cancel(@RequestBody
-			@PathVariable("bankSlipsId") String bankSlipsId) {
+			@PathVariable("bankSlipsId")@NotNull UUID bankSlipsId) {
 
 		BankSlips paidBankSlips = bankSlipsService.cancelSlip(bankSlipsId);
 		return new ResponseEntity<BankSlips>(paidBankSlips, HttpStatus.OK);
@@ -66,7 +67,7 @@ public class BankSlipsController {
 
 	@RequestMapping(value = "/bankslips/pay/{bankSlipsId}", method = RequestMethod.PUT)
 	public ResponseEntity<BankSlips> pay(@RequestBody
-			@PathVariable("bankSlipsId") String bankSlipsId) {
+			@PathVariable("bankSlipsId") @NotNull UUID bankSlipsId) {
 
 		BankSlips paidBankSlips = bankSlipsService.paySlip(bankSlipsId);
 		return new ResponseEntity<BankSlips>(paidBankSlips, HttpStatus.OK);

@@ -14,5 +14,14 @@ public class ErrorMessages {
 	public static final String CUSTOMER_INVALID_SIZE = "Customer must have at least 3 characters and not more than 255 characters";
 	public static final String INVALID_LOCAL_DATE_PROVIDED = "Provided date must not be null";
 	public static final String DUPLICATED_EXTERNAL_ID = "Duplicated externalId";
+	public static final String ERROR = "Error: ";
+	public static final String MESSAGE = "Message";
+	public static final String MISSING_PATH_VARIABLE = "Missing path variable: %s";
+	public static final String INVALID_PATH_TEMPLATE = "Invalid path variable: %s";
+	public static final String EXPECTED_TYPE = "Expected type:  %s";
+	public static final String VALIDATION_FAILED = "Validation failed";
+	public static final String INTERNAL_SERVER_ERROR = "Oops... We found an error, and we are working to fix it as soon as possible";
+	public static final String ILLEGAL_ARGUMENTS_ERROR =  "IllegalArgumentException";
+	
 	
 }

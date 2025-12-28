@@ -15,9 +15,9 @@ public interface IPersistanceService <T> {
 
 	public T create(T record, BindingResult bindingResult);
 	public Page<T> list(Pageable pageable) ;
-	public T show(String recordID);
+	public T show(UUID recordID);
 	public void bulkSave(List<T> records);
-	public T edit(String id, Consumer<T> extraUpdates);
+	public T edit(UUID id, Consumer<T> extraUpdates);
 	public UUID startBulkSave(List<T> records);
 	public void saveAll(List<T> records);
 	

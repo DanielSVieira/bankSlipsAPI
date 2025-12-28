@@ -1,29 +1,23 @@
 package com.bankslips.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.server.ResponseStatusException;
@@ -31,13 +25,11 @@ import org.springframework.web.server.ResponseStatusException;
 import com.bankslips.contants.ErrorMessages;
 import com.bankslips.domain.BankSlips;
 import com.bankslips.domain.bulkupload.BulkJobStatus;
-import com.bankslips.domain.bulkupload.BulkUploadFailure;
 import com.bankslips.domain.bulkupload.BulkUploadJob;
 import com.bankslips.enums.BankSlipsStatus;
 import com.bankslips.exception.BankSlipsContraintViolationException;
 import com.bankslips.exception.BankSlipsNotFoundException;
 import com.bankslips.repository.BankSlipsRepository;
-import com.bankslips.repository.FailureJobsRepository;
 import com.bankslips.repository.JobsRepository;
 import com.bankslips.service.interfaces.IBankSlipsService;
 import com.bankslips.utils.DateUtils;
@@ -81,21 +73,17 @@ public class BankSlipsService implements IBankSlipsService {
 		return bankSlipsRepository.findAll(pageable);
 	}
 	
-	//TODO refactor this code. better calculate the fine
-	public BankSlips show(String bankSlipsId) {
-		try {
-			Optional<BankSlips> bankSlipsOptional = bankSlipsRepository.findById(bankSlipsId);
-			BankSlips bankSlips = bankSlipsOptional.get();
-			if(bankSlips.getStatus().equals(BankSlipsStatus.PENDING)) {
-				long daysExpired = DateUtils.differenceBetweenLocalDate(bankSlips.getDueDate(), new Date());
-				BigDecimal fine = FinanceMathUtils.calculateSimpleFine(bankSlips.getTotalInCents(), daysExpired);
-				bankSlips.setFine(fine);
-			}
-			
-			return bankSlips;
-		} catch (NoSuchElementException e) {
-			throw new BankSlipsNotFoundException(ErrorMessages.BANKSLIPS_NOT_FOUND + bankSlipsId );
-		}
+	public BankSlips show(UUID bankSlipsId) {
+	    BankSlips bankSlips = bankSlipsRepository
+	            .findById(bankSlipsId)
+	            .orElseThrow(() ->
+	                    new BankSlipsNotFoundException(
+	                            ErrorMessages.BANKSLIPS_NOT_FOUND + bankSlipsId
+	                    )
+	            );
+	    
+	    bankSlips.applyFineIfPending(LocalDate.now());
+	    return bankSlips;
 	}
 	
 	/*
@@ -114,7 +102,7 @@ public class BankSlipsService implements IBankSlipsService {
 	
 	@Override
 	@Transactional
-	public BankSlips edit(String id, Consumer<BankSlips> extraUpdates) {
+	public BankSlips edit(UUID id, Consumer<BankSlips> extraUpdates) {
         BankSlips slip = bankSlipsRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ErrorMessages.BANKSLIPS_NOT_FOUND));
         

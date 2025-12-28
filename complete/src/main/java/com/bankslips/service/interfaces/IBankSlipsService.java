@@ -1,20 +1,21 @@
 package com.bankslips.service.interfaces;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import com.bankslips.domain.BankSlips;
 import com.bankslips.enums.BankSlipsStatus;
 
 public interface IBankSlipsService extends IPersistanceService<BankSlips> {
     
-	default BankSlips paySlip(String id) {
+	default BankSlips paySlip(UUID id) {
 	    return edit(id, slip -> {
 	        slip.setStatus(BankSlipsStatus.PAID);
 	        slip.setPaidAt(LocalDateTime.now());
 	    });
 	}
 
-	default BankSlips cancelSlip(String id) {
+	default BankSlips cancelSlip(UUID id) {
 	    return edit(id, slip -> {
 	        slip.setStatus(BankSlipsStatus.CANCELED);
 	        slip.setPaidAt(LocalDateTime.now());

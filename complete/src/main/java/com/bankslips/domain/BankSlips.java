@@ -6,8 +6,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.UUID;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UuidGenerator;
 
 import com.bankslips.contants.ErrorMessages;
 import com.bankslips.enums.BankSlipsStatus;
@@ -23,7 +25,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -61,11 +62,10 @@ import lombok.ToString;
 	)
 public class BankSlips {
 	
-	@SuppressWarnings("deprecation")
-	@Id @GeneratedValue(generator="system-uuid")
-	@GenericGenerator(name="system-uuid", strategy = "uuid2")
+	@Id
+	@UuidGenerator
 	@Column(name = "uuid", nullable = false, updatable = false)
-	@NonNull private String id;
+	@NonNull private UUID id;
 	
     @Column(name = "external_id", nullable = false, updatable = false)
     @NotBlank
