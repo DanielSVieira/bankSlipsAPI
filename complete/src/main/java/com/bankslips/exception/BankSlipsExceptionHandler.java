@@ -70,5 +70,10 @@ public class BankSlipsExceptionHandler {
         error.put(ErrorMessages.MESSAGE, ex.getMessage());
         return ResponseEntity.internalServerError().body(error);
     }
+    
+    @ExceptionHandler(InvalidBulkUploadException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidBulk(InvalidBulkUploadException ex) {
+        return ResponseEntity.badRequest().body(Map.of(ErrorMessages.MESSAGE, ex.getMessage()));
+    }
 
 }

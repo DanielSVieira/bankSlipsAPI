@@ -109,6 +109,22 @@ public class BankSlipsBulkService implements IPersistenceBulkService<BankSlips> 
 		
 	}
 
-    
+	public void processKafkaBulk(UUID jobId, List<BankSlips> slips) {
+
+	    BulkUploadJob job = bulkJobService.startJob(jobId);
+
+	    List<BankSlips> validSlips = validatorService.sanitizeList(slips, job);
+	    List<List<BankSlips>> batches = createBatches(validSlips, BATCH_SIZE);
+
+	    for (List<BankSlips> batch : batches) {
+	        try {
+	            processBatch(batch, job);
+	        } catch (Exception e) {
+	            bulkJobService.handleBatchFailure(batch, job, e);
+	        }
+	    }
+
+	    bulkJobService.finalizeJob(job);
+	}
 
 }

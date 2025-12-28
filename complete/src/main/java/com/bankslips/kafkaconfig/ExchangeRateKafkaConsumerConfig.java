@@ -13,21 +13,17 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.stereotype.Component;
 
 import com.bankslips.domain.exchangerate.dto.ExchangeRateResponse;
 
 @Configuration
 @EnableKafka
-@Component
 @Profile("!test")
-public class KafkaConsumerConfig {
+public class ExchangeRateKafkaConsumerConfig {
 
     @Bean
-    public ConsumerFactory<String, ExchangeRateResponse> consumerFactory() {
-
+    public ConsumerFactory<String, ExchangeRateResponse> exchangeRateConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
-
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:29092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "exchange-rate-group");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
@@ -36,23 +32,18 @@ public class KafkaConsumerConfig {
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
 
         return new DefaultKafkaConsumerFactory<>(
-            props,
-            new StringDeserializer(),
-            new JsonDeserializer<>(ExchangeRateResponse.class)
+                props,
+                new StringDeserializer(),
+                new JsonDeserializer<>(ExchangeRateResponse.class)
         );
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, ExchangeRateResponse>
-    kafkaListenerContainerFactory() {
-
+    public ConcurrentKafkaListenerContainerFactory<String, ExchangeRateResponse> exchangeRateKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, ExchangeRateResponse> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-
-        factory.setConsumerFactory(consumerFactory());
+        factory.setConsumerFactory(exchangeRateConsumerFactory());
         factory.setConcurrency(3); // parallel consumers
-
         return factory;
     }
 }
-

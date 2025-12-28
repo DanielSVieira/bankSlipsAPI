@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public interface IPersistenceBulkService <T>  {
 
-    UUID startAsyncBulkUpload(List<T> slips);
+    UUID startAsyncBulkUpload(List<T> records);
     void bulkSaveInParallel(List<T> records);
+    void processKafkaBulk(UUID id, List<T> records);
 }

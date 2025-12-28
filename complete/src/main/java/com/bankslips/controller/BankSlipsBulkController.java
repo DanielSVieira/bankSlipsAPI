@@ -14,13 +14,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bankslips.contants.ErrorMessages;
 import com.bankslips.domain.BankSlips;
 import com.bankslips.domain.bulkupload.BulkUploadFailure;
 import com.bankslips.domain.bulkupload.BulkUploadJob;
+import com.bankslips.exception.InvalidBulkUploadException;
+import com.bankslips.kafkaconfig.producer.BankSlipsBulkProducer;
 import com.bankslips.service.BulkJobService;
 import com.bankslips.service.interfaces.IPersistenceBulkService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 @RestController
@@ -32,6 +36,9 @@ public class BankSlipsBulkController {
     
     @Autowired
     private BulkJobService bulkJobService;
+    
+    @Autowired
+    private BankSlipsBulkProducer bankSlipsBulkProducer;
 
 
 	@RequestMapping(value = "/bankslips/bulk", method = RequestMethod.POST)
@@ -90,6 +97,25 @@ public class BankSlipsBulkController {
 	@RequestMapping(value = "/bankslips/bulk/{jobId}/failures", method = RequestMethod.GET)
 	public List<BulkUploadFailure> getFailures(@PathVariable UUID jobId) {
 	    return bulkJobService.getFailureJobById(jobId);
+	}
+	
+	@RequestMapping(value = "/bankslips/bulk/kafka", method = RequestMethod.POST)
+	public ResponseEntity<?> uploadBulkKafka(@RequestBody @Valid @NotEmpty List<BankSlips> slips) {
+
+	    if (slips == null || slips.isEmpty()) {
+	        throw new InvalidBulkUploadException(ErrorMessages.EMPTY_BANKSLIPS_LIST);
+	    }
+
+	    UUID jobId = bulkJobService.startJob(slips.size());
+	    bankSlipsBulkProducer.send(jobId, slips);
+
+	    return ResponseEntity.accepted().body(
+	        Map.of(
+	            "message", "Bulk upload sent to Kafka",
+	            "jobId", jobId,
+	            "slips", slips.size()
+	        )
+	    );
 	}
 
 

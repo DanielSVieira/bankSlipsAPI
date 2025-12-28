@@ -1,4 +1,4 @@
-package com.bankslips.kafkaconfig;
+package com.bankslips.kafkaconfig.producer;
 
 import java.util.HashMap;
 import java.util.Map;
