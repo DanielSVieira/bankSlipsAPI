@@ -81,5 +81,11 @@ public class BankSlipsExceptionHandler {
     public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(InvalidBulkUploadException ex) {
         return ResponseEntity.badRequest().body(Map.of(ErrorMessages.MESSAGE, ex.getMessage()));
     }    
+    
+    @ExceptionHandler(InvalidBankSlipsStatusChangeException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidBankSlipsStatusChangeException(InvalidBankSlipsStatusChangeException ex) {
+        return ResponseEntity.badRequest().body(Map.of(ErrorMessages.MESSAGE, ex.getMessage()));
+    }   
+    
 
 }

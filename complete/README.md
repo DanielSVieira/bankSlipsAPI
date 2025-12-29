@@ -35,6 +35,12 @@ $ mvn test
 
 # Available API Calls
 
+##### Endpoints list (Swagger)
+The list of endpoints can be found in
+
+```
+localhost:8080/swagger-ui/index.html
+```
 
 #### Create a new BanSlips
 ```
@@ -200,4 +206,50 @@ It is required to post a valid list of bankslips on the payload.
 Response status:
 
 ● 200 : The input was received, and it will be processed async
+
+
+####  Connecting to the Dashboard WebSocket
+The application exposes a WebSocket endpoint to provide real-time updates of bankslip statuses for the dashboard.
+WebSocket Endpoint
+
+```
+ws://localhost:8080/ws
+```
+
+Uses STOMP protocol.
+SockJS is enabled, so clients that don’t support WebSocket natively can still connect.
+
+BankslipSummaryDTO fields:
+
+```
+{
+  "status": "PENDING or PAID",
+  "count": 5,
+  "totalAmount": 150000
+}
+```
+
+Example JavaScript Client
+
+```
+const socket = new SockJS('http://localhost:8080/ws');
+const stompClient = Stomp.over(socket);
+
+stompClient.connect({}, function(frame) {
+    console.log('Connected: ' + frame);
+
+    // Subscribe to pending bankslips
+    stompClient.subscribe('/topic/dashboard/pending', function(message) {
+        const summary = JSON.parse(message.body);
+        console.log('Pending summary:', summary);
+    });
+
+    // Subscribe to paid bankslips
+    stompClient.subscribe('/topic/dashboard/paid', function(message) {
+        const summary = JSON.parse(message.body);
+        console.log('Paid summary:', summary);
+    });
+});
+```
+
 

@@ -94,6 +94,9 @@ public class BankSlips {
     @Transient
 	private BigDecimal fine;
     
+    @Transient @Nullable
+    private BankSlipsStatus oldStatus;
+    
     @Nullable
     @PastOrPresent
     private LocalDateTime paidAt;

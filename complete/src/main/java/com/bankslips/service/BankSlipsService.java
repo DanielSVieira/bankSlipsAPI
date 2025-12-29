@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,15 +21,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.bankslips.contants.ErrorMessages;
 import com.bankslips.domain.BankSlips;
-import com.bankslips.domain.bulkupload.BulkJobStatus;
-import com.bankslips.domain.bulkupload.BulkUploadJob;
 import com.bankslips.enums.BankSlipsStatus;
 import com.bankslips.exception.BankSlipsContraintViolationException;
 import com.bankslips.exception.BankSlipsNotFoundException;
+import com.bankslips.exception.InvalidBankSlipsStatusChangeException;
 import com.bankslips.repository.BankSlipsRepository;
-import com.bankslips.repository.BulkJobsRepository;
 import com.bankslips.service.interfaces.IBankSlipsService;
-import com.bankslips.service.interfaces.IPersistenceBulkService;
 
 import jakarta.transaction.Transactional;
 
@@ -79,24 +77,28 @@ public class BankSlipsService implements IBankSlipsService {
 	@Override
 	@Transactional
 	public BankSlips edit(UUID id, Consumer<BankSlips> extraUpdates) {
-        BankSlips slip = bankSlipsRepository.findById(id)
+        BankSlips bankSlips = bankSlipsRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ErrorMessages.BANKSLIPS_NOT_FOUND));
         
-        BankSlipsStatus oldStatus = slip.getStatus();
-        extraUpdates.accept(slip);
-        BankSlipsStatus newStatus = slip.getStatus();
-        if (!oldStatus.equals(newStatus)) {
-            validateStatusChange(oldStatus, newStatus);
-        }
+        BankSlipsStatus oldStatus = bankSlips.getStatus();
+        extraUpdates.accept(bankSlips);
+        BankSlipsStatus newStatus = bankSlips.getStatus();
+        checkStatusChangeAllowed(oldStatus, newStatus);
         
-        return bankSlipsRepository.save(slip);
-
+        bankSlips.setOldStatus(oldStatus);
+        return bankSlipsRepository.save(bankSlips);
 	}
 	
-	private void validateStatusChange(BankSlipsStatus oldStatus, BankSlipsStatus newStatus) {
+	@Override
+	public List<BankSlips> findByStatus(BankSlipsStatus status) {
+	    return bankSlipsRepository.findAllByStatus(status); 
+	}
+	
+	private void checkStatusChangeAllowed(BankSlipsStatus oldStatus, BankSlipsStatus newStatus) {
+		if(!oldStatus.equals(newStatus)) { return; }
 	    if (oldStatus != BankSlipsStatus.PENDING) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-	            "Bank slip status can only be changed if it is pending");
+	        throw new InvalidBankSlipsStatusChangeException(
+	            ErrorMessages.INVALID_BANK_SLIPS_STATUS_CHANGE);
 	    }
 	}
 	

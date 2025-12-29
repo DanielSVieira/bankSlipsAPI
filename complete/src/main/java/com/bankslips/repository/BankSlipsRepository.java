@@ -25,5 +25,6 @@ public interface BankSlipsRepository extends JpaRepository<BankSlips, UUID> {
     Optional<BankSlips> findByExternalId(String externalId);
     boolean existsByExternalId(String externalId);
     List<BankSlips> findAllByExternalIdIn(Set<String> externalIds);
+    List<BankSlips> findAllByStatus(BankSlipsStatus status);
     
 }

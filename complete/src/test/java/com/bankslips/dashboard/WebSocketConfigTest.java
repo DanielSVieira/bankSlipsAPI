@@ -23,6 +23,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.StompWebSocketEndpointRegistration;
 
 import com.bankslips.Application;
+import com.bankslips.dashboard.config.WebSocketConfig;
 
 
 @ExtendWith(SpringExtension.class)

@@ -1,4 +1,4 @@
-package com.bankslips.dashboard;
+package com.bankslips.dashboard.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -9,6 +9,11 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+	
+	//@TODO - consume the information extracted to the application.properties 
+//    @Autowired
+//    private WebSocketProperties properties;
+	
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.enableSimpleBroker("/topic");

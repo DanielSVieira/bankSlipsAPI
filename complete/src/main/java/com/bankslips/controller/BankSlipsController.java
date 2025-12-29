@@ -4,6 +4,7 @@ import java.util.UUID;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,9 @@ public class BankSlipsController {
 
 	@Autowired
 	private IBankSlipsService bankSlipsService;
+	
+	@Autowired
+	private ApplicationEventPublisher eventPublisher;
 
 	@RequestMapping(value = "/bankslips/", method = RequestMethod.POST)
 	public ResponseEntity<BankSlips> create(@RequestBody @Valid BankSlips bankSlips, BindingResult bindingResult) {
@@ -53,7 +57,7 @@ public class BankSlipsController {
 			@PathVariable("bankSlipsId") UUID bankSlipsId) {
 
 		BankSlips retrievedBankSlips = bankSlipsService.show(bankSlipsId);
-		BankSlips paidBankSlips = bankSlipsService.updateBankSlipsStatus(retrievedBankSlips, bankSlips.getStatus());
+		BankSlips paidBankSlips = bankSlipsService.updateBankSlipsStatus(retrievedBankSlips, bankSlips.getStatus(), eventPublisher);
 		return new ResponseEntity<BankSlips>(paidBankSlips, HttpStatus.OK);
 	}
 	
@@ -61,7 +65,7 @@ public class BankSlipsController {
 	public ResponseEntity<BankSlips> cancel(@RequestBody
 			@PathVariable("bankSlipsId")@NotNull UUID bankSlipsId) {
 
-		BankSlips paidBankSlips = bankSlipsService.cancelSlip(bankSlipsId);
+		BankSlips paidBankSlips = bankSlipsService.cancelSlip(bankSlipsId, eventPublisher);
 		return new ResponseEntity<BankSlips>(paidBankSlips, HttpStatus.OK);
 	}	
 
@@ -69,7 +73,7 @@ public class BankSlipsController {
 	public ResponseEntity<BankSlips> pay(@RequestBody
 			@PathVariable("bankSlipsId") @NotNull UUID bankSlipsId) {
 
-		BankSlips paidBankSlips = bankSlipsService.paySlip(bankSlipsId);
+		BankSlips paidBankSlips = bankSlipsService.paySlip(bankSlipsId, eventPublisher);
 		return new ResponseEntity<BankSlips>(paidBankSlips, HttpStatus.OK);
 	}
 	
