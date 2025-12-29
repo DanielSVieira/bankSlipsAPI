@@ -16,6 +16,7 @@ import com.bankslips.utils.FinanceMathUtils;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.annotation.Nullable;
@@ -64,6 +65,7 @@ public class BankSlips {
 	@Id
 	@UuidGenerator
 	@Column(name = "uuid", nullable = false, updatable = false)
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	@NonNull private UUID id;
 	
     @Column(name = "external_id", nullable = false, updatable = false)
@@ -88,20 +90,23 @@ public class BankSlips {
     @Size(min = 3, max = 255, message=ErrorMessages.CUSTOMER_INVALID_SIZE)
     @NonNull private String customer;
     
-    @Enumerated(value = EnumType.STRING)
+    @Enumerated(value = EnumType.STRING) 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BankSlipsStatus status = BankSlipsStatus.PENDING;
     
-    @Transient
+    @Transient @JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private BigDecimal fine;
     
-    @Transient @Nullable
+    @Transient @Nullable @JsonIgnore
     private BankSlipsStatus oldStatus;
     
     @Nullable
     @PastOrPresent
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime paidAt;
     
     @Version
+    @JsonIgnore
     private Long version;
     
     public void applyFineIfPending(LocalDate today) {
