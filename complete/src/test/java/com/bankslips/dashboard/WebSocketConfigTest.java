@@ -5,38 +5,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.simp.config.SimpleBrokerRegistration;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.StompWebSocketEndpointRegistration;
 
-import com.bankslips.Application;
+import com.bankslips.config.BaseTest;
 import com.bankslips.dashboard.config.WebSocketConfig;
 
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = Application.class)
-@ActiveProfiles("test")
-@AutoConfigureMockMvc
-@Import(WebSocketConfig.class)
-@TestPropertySource(properties = {
-	    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration",
-	    "spring.kafka.listener.auto-startup=false",
-	    "spring.kafka.admin.auto-create=false" // Add this
-	})
-class WebSocketConfigTest {
+class WebSocketConfigTest extends BaseTest {
 
 	@Autowired
     private WebSocketConfig config;

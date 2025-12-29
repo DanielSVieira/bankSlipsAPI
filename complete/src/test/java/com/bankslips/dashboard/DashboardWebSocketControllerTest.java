@@ -1,36 +1,26 @@
 package com.bankslips.dashboard;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 
-import com.bankslips.Application;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
+import com.bankslips.config.BaseTest;
 import com.bankslips.dashboard.controller.DashboardWebSocketController;
 import com.bankslips.dashboard.dto.BankslipSummaryDTO;
 import com.bankslips.dashboard.events.DashboardUpdateEvent;
 import com.bankslips.dashboard.service.DashboardService;
 import com.bankslips.enums.BankSlipsStatus;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = Application.class)
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@TestPropertySource(properties = {
-	    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration",
-	    "spring.kafka.listener.auto-startup=false"
-	})
-public class DashboardWebSocketControllerTest {
+public class DashboardWebSocketControllerTest extends BaseTest {
 	
     @Autowired
     private DashboardWebSocketController controller;

@@ -17,13 +17,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.bankslips.config.BaseTest;
 import com.bankslips.domain.exchangerate.dto.ExchangeRateResponse;
 import com.bankslips.integration.exchange.ExchangeRateClient;
 
 import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
-class ExternalSyncServiceTest {
+class ExternalSyncServiceTest extends BaseTest {
 
     @InjectMocks
     private ExternalSyncService externalSyncService;

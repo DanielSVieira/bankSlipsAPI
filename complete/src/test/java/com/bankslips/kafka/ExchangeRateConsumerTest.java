@@ -13,12 +13,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.bankslips.config.BaseTest;
 import com.bankslips.domain.exchangerate.dto.ExchangeRateResponse;
 import com.bankslips.kafkaconfig.ExchangeRateConsumer;
 import com.bankslips.repository.ExchangeRateRepository;
 import com.bankslips.testutils.TestUtils;
 
-class ExchangeRateConsumerTest {
+class ExchangeRateConsumerTest extends BaseTest {
 
     private ExchangeRateConsumer consumer;
 

@@ -1,37 +1,26 @@
 package com.bankslips.service;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 
-import com.bankslips.Application;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
+
+import com.bankslips.config.BaseTest;
 import com.bankslips.dashboard.events.DashboardUpdateEvent;
 import com.bankslips.domain.BankSlips;
 import com.bankslips.enums.BankSlipsStatus;
 import com.bankslips.service.interfaces.IBankSlipsService;
 
-import jakarta.transaction.Transactional;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = Application.class)
-@AutoConfigureMockMvc
-@Transactional
-@ActiveProfiles("test")
-@TestPropertySource(properties = {
-	    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration",
-	    "spring.kafka.listener.auto-startup=false"
-	})
-public class BankSlipsServiceTest {
+public class BankSlipsServiceTest extends BaseTest {
 
     @Test
     void paySlipShouldPublishDashboardEvent() {
