@@ -14,9 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bankslips.contants.ErrorMessages;
+import com.bankslips.controller.response.BulkUploadResponse;
+import com.bankslips.controller.response.BulkUploadStatusResponse;
 import com.bankslips.domain.BankSlips;
 import com.bankslips.domain.bulkupload.BulkUploadFailure;
 import com.bankslips.domain.bulkupload.BulkUploadJob;
+import com.bankslips.exception.JobNotFoundException;
 import com.bankslips.service.BulkJobService;
 import com.bankslips.service.interfaces.IPersistenceBulkService;
 
@@ -36,43 +40,29 @@ public class BankSlipsBulkController {
 
 
 	@RequestMapping(value = "/bankslips/bulk", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> uploadBulk(@RequestBody @Valid @NotEmpty List<BankSlips> slips) {
+    public ResponseEntity<BulkUploadResponse> uploadBulk(@RequestBody @Valid @NotEmpty List<BankSlips> slips) {
     	bankSlipsAsyncService.bulkSaveInParallel(slips);
 
-        Map<String, Object> response = Map.of(
-            "uploaded", slips.size(),
-            "timestamp", LocalDateTime.now()
-        );
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                BulkUploadResponse.sync(slips.size())
+            );
     }
     
 	@RequestMapping(value = "/bankslips/bulk/async", method = RequestMethod.POST)
-    public ResponseEntity<?> uploadBulkAsync(@RequestBody @Valid @NotEmpty List<BankSlips> slips) {
+    public ResponseEntity<BulkUploadResponse> uploadBulkAsync(@RequestBody @Valid @NotEmpty List<BankSlips> slips) {
 		UUID jobId = bankSlipsAsyncService.startAsyncBulkUpload(slips);
 		
-        return ResponseEntity.accepted()
-                .body(Map.of("message", "Bulk upload started", 
-                		     "slips", slips.size(),
-                		     "jobId", jobId));
+	    return ResponseEntity.accepted().body(
+	            BulkUploadResponse.async(slips.size(), jobId)
+	        );
     }
 	
 	@RequestMapping(value = "/bankslips/bulk/status/{jobId}", method = RequestMethod.GET)
-	public ResponseEntity<?> getStatus(@PathVariable @NotNull UUID jobId) {
-	    Optional<BulkUploadJob> jobOptional = bulkJobService.getJobById(jobId);
-	    BulkUploadJob job = jobOptional.get();
+	public BulkUploadStatusResponse getStatus(@PathVariable @NotNull UUID jobId) {
+	    BulkUploadJob job = bulkJobService.getJobById(jobId)
+	            .orElseThrow(() -> new JobNotFoundException(String.format(ErrorMessages.JOB_NOT_FOUND, jobId)));
 
-	    return ResponseEntity.ok(
-	        Map.of(
-	            "status", job.getStatus(),
-	            "total", job.getTotalRecords(),
-	            "processed", job.getProcessedRecords(),
-	            "success", job.getSuccessRecords(),
-	            "failed", job.getFailedRecords(),
-	            "startedAt", job.getStartedAt(),
-	            "finishedAt", job.getFinishedAt()
-	        )
-	    );
+	        return BulkUploadStatusResponse.from(job);
 	}
 	
 	@RequestMapping(value = "/bankslips/bulk/{jobId}/failures", method = RequestMethod.GET)
