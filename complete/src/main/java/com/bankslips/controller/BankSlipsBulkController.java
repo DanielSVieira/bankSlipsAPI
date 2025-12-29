@@ -21,6 +21,7 @@ import com.bankslips.service.BulkJobService;
 import com.bankslips.service.interfaces.IPersistenceBulkService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 @RestController
@@ -35,15 +36,8 @@ public class BankSlipsBulkController {
 
 
 	@RequestMapping(value = "/bankslips/bulk", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> uploadBulk(@RequestBody @Valid  List<BankSlips> slips) {
-		
-		if (slips == null || slips.isEmpty()) {
-		    return ResponseEntity.badRequest()
-		        .body(Map.of("message", "Bulk upload list cannot be empty"));
-		}
-		
+    public ResponseEntity<Map<String, Object>> uploadBulk(@RequestBody @Valid @NotEmpty List<BankSlips> slips) {
     	bankSlipsAsyncService.bulkSaveInParallel(slips);
-
 
         Map<String, Object> response = Map.of(
             "uploaded", slips.size(),
@@ -54,12 +48,7 @@ public class BankSlipsBulkController {
     }
     
 	@RequestMapping(value = "/bankslips/bulk/async", method = RequestMethod.POST)
-    public ResponseEntity<?> uploadBulkAsync(@RequestBody @Valid List<BankSlips> slips) {
-		if (slips == null || slips.isEmpty()) {
-		    return ResponseEntity.badRequest()
-		        .body(Map.of("message", "Bulk upload list cannot be empty"));
-		}
-		
+    public ResponseEntity<?> uploadBulkAsync(@RequestBody @Valid @NotEmpty List<BankSlips> slips) {
 		UUID jobId = bankSlipsAsyncService.startAsyncBulkUpload(slips);
 		
         return ResponseEntity.accepted()
@@ -70,7 +59,6 @@ public class BankSlipsBulkController {
 	
 	@RequestMapping(value = "/bankslips/bulk/status/{jobId}", method = RequestMethod.GET)
 	public ResponseEntity<?> getStatus(@PathVariable @NotNull UUID jobId) {
-
 	    Optional<BulkUploadJob> jobOptional = bulkJobService.getJobById(jobId);
 	    BulkUploadJob job = jobOptional.get();
 

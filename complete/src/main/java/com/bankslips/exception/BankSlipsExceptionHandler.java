@@ -7,6 +7,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -70,5 +71,15 @@ public class BankSlipsExceptionHandler {
         error.put(ErrorMessages.MESSAGE, ex.getMessage());
         return ResponseEntity.internalServerError().body(error);
     }
+    
+    @ExceptionHandler(InvalidBulkUploadException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidBulk(InvalidBulkUploadException ex) {
+        return ResponseEntity.badRequest().body(Map.of(ErrorMessages.MESSAGE, ex.getMessage()));
+    }
+    
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(InvalidBulkUploadException ex) {
+        return ResponseEntity.badRequest().body(Map.of(ErrorMessages.MESSAGE, ex.getMessage()));
+    }    
 
 }

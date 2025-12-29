@@ -22,6 +22,6 @@ public class ErrorMessages {
 	public static final String VALIDATION_FAILED = "Validation failed";
 	public static final String INTERNAL_SERVER_ERROR = "Oops... We found an error, and we are working to fix it as soon as possible";
 	public static final String ILLEGAL_ARGUMENTS_ERROR =  "IllegalArgumentException";
-	
+	public static final String EMPTY_BANKSLIPS_LIST = "Bulk upload list cannot be empty";
 	
 }

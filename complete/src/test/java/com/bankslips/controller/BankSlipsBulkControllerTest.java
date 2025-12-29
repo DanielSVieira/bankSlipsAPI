@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doThrow;
 
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -139,6 +139,18 @@ public class BankSlipsBulkControllerTest {
                 .andExpect(jsonPath("$.jobId").value(jobId.toString()));
 
         verify(bankSlipsAsyncService).startAsyncBulkUpload(anyList());
+    }
+    
+    @Test
+    void bulkEmptyListPayload() throws Exception {
+        List<BankSlips> emptyList = new ArrayList<BankSlips>();
+        String json = mapper.writeValueAsString(emptyList);
+
+        mockMvc.perform(post("/rest/bankslips/bulk/async")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest());
+
     }
 
 }
