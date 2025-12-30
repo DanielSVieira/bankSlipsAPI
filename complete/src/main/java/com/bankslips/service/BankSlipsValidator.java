@@ -34,24 +34,33 @@ public class BankSlipsValidator {
      * If a record is not successfully validated by the domain constraints, it is not added to the final list
      * Every failure record is registered to the failureRecorder
      */
-	public List<BankSlips> sanitizeList(List<BankSlips> slips, BulkUploadJob job) {
+    public List<BankSlips> sanitizeList(List<BankSlips> slips, BulkUploadJob job) {
         Set<String> seenExternalIds = ConcurrentHashMap.newKeySet();
         List<BankSlips> validSlips = new ArrayList<>();
 
         for (BankSlips slip : slips) {
-            boolean isValid = true;
-
-            if (!seenExternalIds.add(slip.getExternalId())) {
-                bulkJobService.recordFailure(job, slip, ErrorMessages.DUPLICATED_EXTERNAL_ID);
+            if (isDuplicatedExternalId(slip, seenExternalIds, job)) {
                 continue;
             }
 
-            isValid = validateBankSlip(job, slip, isValid);
-
-            if (isValid) validSlips.add(slip);
+            if (isValidBankSlip(slip, job)) {
+                validSlips.add(slip);
+            }
         }
 
         return validSlips;
+    }
+    
+    private boolean isDuplicatedExternalId(BankSlips slip, Set<String> seenExternalIds, BulkUploadJob job) {
+        if (!seenExternalIds.add(slip.getExternalId())) {
+            bulkJobService.recordFailure(job, slip, ErrorMessages.DUPLICATED_EXTERNAL_ID);
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean isValidBankSlip(BankSlips slip, BulkUploadJob job) {
+        return validateBankSlip(job, slip, true);
     }
 
 	private boolean validateBankSlip(BulkUploadJob job, BankSlips slip, boolean isValid) {

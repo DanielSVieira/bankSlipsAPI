@@ -4,6 +4,8 @@ spring:
       exchange-rates: exchange-rates
       exchange-rates-group-id: exchange-rate-group
       exchange-rates-container-factory: kafkaListenerContainerFactory
+      partitions: 3
+      replicas: 1
     consumer:
       group-id: my-group
       auto-offset-reset: earliest

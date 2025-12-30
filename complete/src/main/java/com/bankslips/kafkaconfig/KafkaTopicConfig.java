@@ -18,9 +18,8 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic exchangeRatesTopic() {
         return TopicBuilder.name(kafkaTopics.getExchangeRates())
-                .partitions(3)
-                .replicas(1)
                 .build();
+       
     }
 }
 

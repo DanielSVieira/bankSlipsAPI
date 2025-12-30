@@ -35,7 +35,7 @@ public class DashboardWebSocketController {
     }
     
     @EventListener
-    public void onDashboardUpdate(DashboardUpdateEvent event) {
+	public void onDashboardUpdate(DashboardUpdateEvent event) {
         broadcastDashboardUpdate();
     }
 }

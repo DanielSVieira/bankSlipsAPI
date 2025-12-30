@@ -88,9 +88,7 @@ public class BankSlipsBulkService implements IPersistenceBulkService<BankSlips> 
 	@Override
 	public UUID startAsyncBulkUpload(List<BankSlips> slips) {
 	    UUID jobId = bulkJobService.startJob(slips.size());
-
 	    bulkSaveAsync(jobId, slips);
-
 	    return jobId;
 	}
 
