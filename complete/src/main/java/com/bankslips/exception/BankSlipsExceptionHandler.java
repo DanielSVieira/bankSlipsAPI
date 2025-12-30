@@ -35,7 +35,7 @@ public class BankSlipsExceptionHandler {
 
 	@ExceptionHandler(BankSlipsContraintViolationException.class)
 	public ResponseEntity<?> handleBankSlipsContraintViolationException(BankSlipsContraintViolationException ex) {
-		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(ex.getMessage());
+		return ResponseEntity.status(ex.getStatus()).body(ex.getMessage());
 	}
 
 	@ExceptionHandler(BankSlipsNotFoundException.class)

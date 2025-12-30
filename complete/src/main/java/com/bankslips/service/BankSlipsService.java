@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -39,13 +40,24 @@ public class BankSlipsService implements IBankSlipsService {
     @Autowired
     private BankSlipsValidator bankSlipsValidator;
 	
-	public BankSlips create(BankSlips bankSlips, BindingResult bindingResult)  {
-		if (bankSlipsValidator.jsonContainsErrors(bindingResult)) {
-			List<String> errorMessages = bankSlipsValidator.getErrorMessages(bindingResult);
-			throw new BankSlipsContraintViolationException(errorMessages.toString(), HttpStatus.UNPROCESSABLE_ENTITY);
-		}
-		return bankSlipsRepository.save(bankSlips);	
-	}
+    public BankSlips create(BankSlips bankSlips, BindingResult bindingResult) {
+
+        if (bankSlipsValidator.jsonContainsErrors(bindingResult)) {
+            List<String> errorMessages = bankSlipsValidator.getErrorMessages(bindingResult);
+            throw new BankSlipsContraintViolationException(
+                errorMessages.toString(),
+                HttpStatus.UNPROCESSABLE_ENTITY
+            );
+        }
+
+        try {
+            return bankSlipsRepository.save(bankSlips);
+        } catch (DataIntegrityViolationException ex) {
+            throw new BankSlipsContraintViolationException(ErrorMessages.DUPLICATED_EXTERNAL_ID,
+                    HttpStatus.CONFLICT);
+        }
+    }
+
 	
 	public BankSlips create(BankSlips bankSlips)  {
 		return bankSlipsRepository.save(bankSlips);	

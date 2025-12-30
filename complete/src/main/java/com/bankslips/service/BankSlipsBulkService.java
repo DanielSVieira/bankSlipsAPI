@@ -32,9 +32,6 @@ public class BankSlipsBulkService implements IPersistenceBulkService<BankSlips> 
     @Autowired
     private BulkJobService bulkJobService;
     
-    @Autowired
-    private BankSlipsRepository bankSlipsRepository;
-    
 	@Autowired
 	private ExecutorService executor;
 
@@ -99,7 +96,7 @@ public class BankSlipsBulkService implements IPersistenceBulkService<BankSlips> 
 	public void bulkSaveInParallel(List<BankSlips> slips) { 
         List<CompletableFuture<Void>> futures = slips.stream()
                 .map(slip -> CompletableFuture.runAsync(() -> {
-                	bankSlipsRepository.save(slip);
+                	bankSlipsService.create(slip, null);
                 }, executor))
                 .collect(Collectors.toList());
 
